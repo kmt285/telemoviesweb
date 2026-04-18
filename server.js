@@ -58,6 +58,19 @@ bot.onText(/\/setad/, (msg) => {
   bot.sendMessage(chatId, "📢 ကြော်ငြာအသစ် ထည့်သွင်းပါမည်။ \n\nပထမဆုံး **ကြော်ငြာ ပုံ (Photo)** ကို ပို့ပေးပါ။");
 });
 
+// 🌟 ကြော်ငြာကို အပြီးတိုင် ဖျက်ရန် Command
+bot.onText(/\/delad/, async (msg) => {
+  const chatId = msg.chat.id;
+  if (chatId.toString() !== ADMIN_CHAT_ID) return;
+
+  try {
+    await Ad.deleteMany({}); // Database ထဲက ကြော်ငြာအားလုံးကို ရှင်းလင်းမည်
+    bot.sendMessage(chatId, "🗑 ကြော်ငြာကို အောင်မြင်စွာ ဖျက်လိုက်ပါပြီ။ \nWebsite တွင် ကြော်ငြာ ပြတော့မည် မဟုတ်ပါ။");
+  } catch (err) {
+    bot.sendMessage(chatId, "❌ ကြော်ငြာဖျက်ရာတွင် အမှားဖြစ်နေပါသည်။");
+  }
+});
+
 // 🌟 [၂] ရုပ်ရှင်များကို ပြင်/ဖျက်ရန် Command
 bot.onText(/\/manage/, async (msg) => {
   const chatId = msg.chat.id;
