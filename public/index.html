@@ -247,8 +247,16 @@
             .then(res => res.json())
             .then(data => {
                 if (data && data.fileId) {
-                    document.getElementById('headerBannerImg').src = `/api/image/${data.fileId}`;
-                    document.getElementById('headerBannerLink').href = data.link || '#';
+                    const linkWrap = document.getElementById('headerBannerLink');
+                    linkWrap.href = data.link || '#';
+                    
+                    // 🌟 GIF (Video) ဖြစ်လျှင် Video Tag ဖြင့်ပြမည်၊ ပုံဖြစ်လျှင် Image Tag ဖြင့်ပြမည်
+                    if (data.isVideo) {
+                        linkWrap.innerHTML = `<video src="/api/image/${data.fileId}" autoplay loop muted playsinline style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); border: 1px solid var(--border-color); pointer-events: none;"></video>`;
+                    } else {
+                        linkWrap.innerHTML = `<img src="/api/image/${data.fileId}" alt="Sponsor Banner" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); border: 1px solid var(--border-color);">`;
+                    }
+                    
                     document.getElementById('headerBannerContainer').style.display = 'block';
                 }
             })
