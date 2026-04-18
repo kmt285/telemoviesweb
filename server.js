@@ -26,6 +26,13 @@ const movieSchema = new mongoose.Schema({
 });
 const Movie = mongoose.model('Movie', movieSchema);
 
+// 🌟 Ads (ကြော်ငြာ) အတွက် Schema (အသစ်)
+const adSchema = new mongoose.Schema({
+  adFileId: String, // ကြော်ငြာပုံ
+  adLink: String    // ကြော်ငြာလင့် (Sponsor Link)
+});
+const Ad = mongoose.model('Ad', adSchema);
+
 
 // --- TELEGRAM BOT SETUP ---
 const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
@@ -40,6 +47,15 @@ bot.onText(/\/addmovie/, (msg) => {
 
   adminState[chatId] = { step: 'WAITING_PHOTO', data: {} };
   bot.sendMessage(chatId, "🎬 ရုပ်ရှင်အသစ်တင်ရန် စတင်ပါပြီ။ \n\nပထမဆုံး **Poster ဓာတ်ပုံ** ကို ပို့ပေးပါ။");
+});
+
+// 🌟 ကြော်ငြာအသစ် ထည့်ရန် Command
+bot.onText(/\/setad/, (msg) => {
+  const chatId = msg.chat.id;
+  if (chatId.toString() !== ADMIN_CHAT_ID) return;
+
+  adminState[chatId] = { step: 'WAITING_AD_PHOTO', data: {} };
+  bot.sendMessage(chatId, "📢 ကြော်ငြာအသစ် ထည့်သွင်းပါမည်။ \n\nပထမဆုံး **ကြော်ငြာ ပုံ (Photo)** ကို ပို့ပေးပါ။");
 });
 
 // 🌟 [၂] ရုပ်ရှင်များကို ပြင်/ဖျက်ရန် Command
@@ -119,6 +135,26 @@ bot.on('message', async (msg) => {
   if (chatId.toString() !== ADMIN_CHAT_ID || !adminState[chatId]) return;
 
   const state = adminState[chatId];
+
+  // --- 🌟 ကြော်ငြာတင်သည့် စနစ် (Set Ad Steps) ---
+  if (state.step === 'WAITING_AD_PHOTO' && msg.photo) {
+    state.data.adFileId = msg.photo[msg.photo.length - 1].file_id;
+    state.step = 'WAITING_AD_LINK';
+    return bot.sendMessage(chatId, "✅ ကြော်ငြာပုံ ရရှိပါပြီ။ \n\nယခု **ကြော်ငြာ Link (Sponsor Link)** ကို ရိုက်ထည့်ပါ။");
+  }
+  if (state.step === 'WAITING_AD_LINK' && msg.text) {
+    state.data.adLink = msg.text;
+    try {
+      await Ad.deleteMany({}); // အဟောင်းများကိုဖျက်၍ တစ်ခုတည်းသာ ထားမည်
+      const newAd = new Ad(state.data);
+      await newAd.save();
+      bot.sendMessage(chatId, "🎉 ကြော်ငြာအသစ် အောင်မြင်စွာ တင်ပြီးပါပြီ!");
+    } catch (err) {
+      bot.sendMessage(chatId, "❌ ကြော်ငြာသိမ်းဆည်းရာတွင် အမှားဖြစ်နေပါသည်။");
+    }
+    delete adminState[chatId];
+    return;
+  }
 
   // --- အသစ်တင်သည့် စနစ် (Add Movie Steps) ---
   if (state.step === 'WAITING_PHOTO' && msg.photo) {
@@ -206,6 +242,12 @@ app.get('/api/views', async (req, res) => {
 });
 
 // --- WEBSITE (FRONTEND) အတွက် API များ ---
+
+// 🌟 Website သို့ ကြော်ငြာပို့ပေးမည့် API
+app.get('/api/ad', async (req, res) => {
+  const ad = await Ad.findOne();
+  res.json(ad || { adFileId: null, adLink: '#' }); // ကြော်ငြာမရှိသေးလျှင် null ပို့မည်
+});
 
 // ရုပ်ရှင်စာရင်း အားလုံးဆွဲယူရန်
 app.get('/api/movies', async (req, res) => {
