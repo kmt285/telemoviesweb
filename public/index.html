@@ -51,19 +51,36 @@
 
         main { padding: 30px 5%; max-width: 1400px; margin: 0 auto; }
 
+        /* 💻 ကွန်ပျူတာ (Desktop) အတွက် ၆ တန်း */
         .movies-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr); /* 💻 ကွန်ပျူတာအတွက် (၆) တန်း */
+            grid-template-columns: repeat(6, 1fr); 
             gap: 24px;
         }
 
-        /* 📱 Tablet စခရင်များအတွက် (၄) တန်း */
+        /* 📱 Tablet အကြီးများအတွက် ၄ တန်း (1024px အောက်) */
         @media (max-width: 1024px) {
             .movies-grid {
                 grid-template-columns: repeat(4, 1fr);
             }
         }
 
+        /* 📱 Tablet အသေးနှင့် ဖုန်းအကြီးများအတွက် ၃ တန်း (768px အောက်) */
+        @media (max-width: 768px) {
+            .movies-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px; /* ကြားဟွာနယ် အနည်းငယ် ကျုံ့မည် */
+            }
+        }
+
+        /* 📱 ဖုန်းများအတွက် ၂ တန်း (600px အောက်) */
+        @media (max-width: 600px) {
+            .movies-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+        }
+        
         .movie-card {
             background-color: var(--bg-card); border: 1px solid var(--border-color);
             border-radius: 8px; overflow: hidden; cursor: pointer;
@@ -146,12 +163,6 @@
         }
         .watch-btn:hover { background-color: var(--primary-hover); }
 
-        @media (max-width: 600px) {
-            nav { flex-direction: column; gap: 15px; }
-            .search-container { max-width: 100%; }
-            .movies-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-            .movie-card img { height: 220px; }
-        }
     </style>
 </head>
 <body>
