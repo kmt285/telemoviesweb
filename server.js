@@ -182,6 +182,29 @@ bot.on('message', async (msg) => {
   }
 });
 
+// 🌟 Telegram Post မှ Views အရေအတွက်ကို ဆွဲယူမည့် API အသစ်
+app.get('/api/views', async (req, res) => {
+    try {
+        const link = req.query.link;
+        if (!link || !link.includes('t.me')) return res.json({ views: '0' });
+
+        // Telegram Widget ကို လှမ်းခေါ်ရန် (?embed=1 ထည့်ရသည်)
+        const embedUrl = link.includes('?') ? `${link}&embed=1` : `${link}?embed=1`;
+        
+        // Website မှ HTML ကိုဆွဲယူခြင်း
+        const response = await fetch(embedUrl);
+        const html = await response.text();
+
+        // 👁️ HTML ထဲမှ Views အရေအတွက်ကို ရှာဖွေခြင်း (ဥပမာ - 1.2K)
+        const match = html.match(/<span class="tgme_widget_message_views">([^<]+)<\/span>/);
+        const views = match ? match[1] : '0';
+
+        res.json({ views: views });
+    } catch (error) {
+        res.json({ views: '0' });
+    }
+});
+
 // --- WEBSITE (FRONTEND) အတွက် API များ ---
 
 // ရုပ်ရှင်စာရင်း အားလုံးဆွဲယူရန်
