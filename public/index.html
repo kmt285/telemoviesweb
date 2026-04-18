@@ -53,8 +53,22 @@
 
         .movies-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(6, 1fr); /* 💻 ကွန်ပျူတာအတွက် (၆) တန်း */
             gap: 24px;
+        }
+
+        /* 📱 Tablet စခရင်များအတွက် (၄) တန်း */
+        @media (max-width: 1024px) {
+            .movies-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* 📱 Tablet စခရင်များအတွက် (၃) တန်း */
+        @media (max-width: 1024px) {
+            .movies-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
 
         .movie-card {
