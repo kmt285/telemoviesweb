@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const TelegramBot = require('node-telegram-bot-api');
+const https = require('https'); //
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -210,6 +211,40 @@ app.get('/api/image/:fileId', async (req, res) => {
   }
 });
 
+// ==========================================
+// 🌟 KEEP-ALIVE စနစ် (24/7 Run ရန်)
+// ==========================================
+
+// Keep Alive ကို လှမ်းခေါ်မည့် လမ်းကြောင်း
+app.get('/keepalive', (req, res) => {
+    res.status(200).send("Server is awake and running!");
+});
+
+function startKeepAlive() {
+    const RENDER_URL = process.env.RENDER_URL; 
+    
+    if (RENDER_URL) {
+        // ၁၄ မိနစ် တစ်ခါ ကိုယ့်ကိုယ်ကိုယ် ပြန် Ping မည်
+        setInterval(() => {
+            https.get(`${RENDER_URL}/keepalive`, (resp) => {
+                if (resp.statusCode === 200) {
+                    console.log('🔄 Keep-Alive Ping အောင်မြင်ပါသည်။');
+                } else {
+                    console.log('⚠️ Keep-Alive Ping အခြေအနေ:', resp.statusCode);
+                }
+            }).on("error", (err) => {
+                console.log("❌ Keep-Alive Ping အမှားဖြစ်နေပါသည်: " + err.message);
+            });
+        }, 14 * 60 * 1000); 
+        
+        console.log('⚡ Keep-Alive စနစ် စတင်အလုပ်လုပ်နေပါပြီ...');
+    } else {
+        console.log('ℹ️ RENDER_URL မထည့်ထားသဖြင့် Keep-Alive စနစ် အလုပ်မလုပ်ပါ။ (Render ပေါ်တွင် ထည့်ရန်လိုသည်)');
+    }
+}
+
+// 🌟 Server ကို စတင် Run မည့် နေရာ (Keep-Alive ပါ တွဲခေါ်ထားသည်)
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}...`);
+  console.log(`🚀 Server is running on port ${PORT}...`);
+  startKeepAlive(); 
 });
