@@ -36,7 +36,8 @@ const Ad = mongoose.model('Ad', adSchema);
 // 🌟 Header Banner ကြော်ငြာအတွက် Schema (အသစ်)
 const bannerSchema = new mongoose.Schema({
   fileId: String,
-  link: String
+  link: String,
+  isVideo: { type: Boolean, default: false } 
 });
 const Banner = mongoose.model('Banner', bannerSchema);
 
@@ -195,19 +196,29 @@ bot.on('message', async (msg) => {
 
   // --- 🌟 Banner တင်သည့် စနစ် (Set Banner Steps) ---
   if (state.step === 'WAITING_BANNER_FILE') {
-    // ပုံမှန် ဓာတ်ပုံ (Photo)၊ ဖိုင် (Document - GIF) နှင့် Animation အားလုံးကို လက်ခံမည်
     let fileId = null;
-    if (msg.photo) fileId = msg.photo[msg.photo.length - 1].file_id;
-    else if (msg.document) fileId = msg.document.file_id;
-    else if (msg.animation) fileId = msg.animation.file_id;
+    let isVideo = false; // 🌟 GIF/Video ဟုတ်မဟုတ် မှတ်သားမည့် နေရာ
+
+    if (msg.photo) { 
+        fileId = msg.photo[msg.photo.length - 1].file_id; 
+    } else if (msg.animation) { 
+        fileId = msg.animation.file_id; 
+        isVideo = true; // Telegram GIF များသည် Animation (MP4 Video) များဖြစ်သည်
+    } else if (msg.video) {
+        fileId = msg.video.file_id;
+        isVideo = true;
+    } else if (msg.document) { 
+        fileId = msg.document.file_id; 
+        if (msg.document.mime_type === 'video/mp4') isVideo = true;
+    }
 
     if (!fileId) return bot.sendMessage(chatId, "❌ ပုံ သို့မဟုတ် GIF ဖိုင်ကိုသာ ပို့ပေးပါ။");
 
     state.data.fileId = fileId;
+    state.data.isVideo = isVideo; // 🌟 Database ထဲသို့ ထည့်သိမ်းမည်
     state.step = 'WAITING_BANNER_LINK';
     return bot.sendMessage(chatId, "✅ Banner ဖိုင် ရရှိပါပြီ။ \n\nယခု **ကြော်ငြာ Link** ကို ရိုက်ထည့်ပါ။");
   }
-
   if (state.step === 'WAITING_BANNER_LINK' && msg.text) {
     state.data.link = msg.text;
     try {
