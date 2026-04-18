@@ -3,94 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Movie Website</title>
+    <title>Premium Movies | Telegram Channel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* အခြေခံ ဒီဇိုင်းများ */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: white;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-            color: #0088cc; /* Telegram Blue */
+        :root {
+            --bg-color: #0f1115;
+            --card-bg: #1a1d24;
+            --primary-color: #0088cc; /* Telegram Blue */
+            --primary-hover: #006699;
+            --text-main: #ffffff;
+            --text-muted: #a0a5b1;
         }
 
-        /* ရုပ်ရှင် Poster များစီစဉ်ရန် Grid ပုံစံ */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Poppins', 'Noto Sans Myanmar', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+        }
+
+        /* 🌟 Header Design */
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 20px;
+        }
+        header h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            text-shadow: 0 2px 10px rgba(0, 136, 204, 0.3);
+        }
+        header p { color: var(--text-muted); margin-top: 5px; }
+
+        /* 🌟 Responsive Grid */
         .movies-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-            padding: 20px 0;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
+
+        /* 🌟 Movie Card Design */
         .movie-card {
-            background-color: #1e1e1e;
-            border-radius: 10px;
+            background-color: var(--card-bg);
+            border-radius: 12px;
             overflow: hidden;
             cursor: pointer;
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            position: relative;
         }
         .movie-card:hover {
-            transform: scale(1.05); /* Mouse တင်ရင် နည်းနည်းကြီးလာစေရန် */
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(0, 136, 204, 0.4);
         }
         .movie-card img {
             width: 100%;
-            height: 300px;
+            height: 270px;
             object-fit: cover;
+            border-bottom: 2px solid var(--primary-color);
         }
-        .movie-card h3 {
-            text-align: center;
-            margin: 10px 0;
-            font-size: 16px;
+        .movie-info { padding: 15px; }
+        .movie-info h3 {
+            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 5px;
         }
+        .movie-info span { font-size: 0.85rem; color: var(--text-muted); }
 
-        /* နှိပ်လိုက်လျှင် ပေါ်လာမည့် Popup (Modal) ဒီဇိုင်း */
+        /* 🌟 Modal (Popup) Design */
         .modal {
-            display: none; /* မူလက ဖျောက်ထားမည် */
+            display: none;
             position: fixed;
             z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.8);
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px); /* နောက်ခံကို ဝါးစေရန် */
         }
         .modal-content {
-            background-color: #222;
-            margin: 5% auto;
-            padding: 20px;
-            border-radius: 10px;
+            background-color: var(--card-bg);
+            margin: 5vh auto;
+            padding: 30px;
+            border-radius: 16px;
             width: 90%;
-            max-width: 600px;
+            max-width: 700px;
             position: relative;
+            max-height: 90vh;
+            overflow-y: auto; /* စာရှည်လျှင် Scroll လုပ်နိုင်ရန် */
+            animation: modalFadeIn 0.3s ease;
+            box-shadow: 0 0 30px rgba(0, 136, 204, 0.2);
+        }
+        @keyframes modalFadeIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
         .close-btn {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
+            position: absolute;
+            right: 20px; top: 15px;
+            color: var(--text-muted);
+            font-size: 35px;
             cursor: pointer;
+            transition: color 0.3s;
         }
-        .close-btn:hover {
-            color: white;
-        }
+        .close-btn:hover { color: white; }
+        
+        .modal-header { text-align: center; margin-bottom: 20px; }
         .modal-img {
             width: 100%;
-            max-height: 400px;
-            object-fit: contain;
-            border-radius: 10px;
+            max-width: 300px;
+            border-radius: 12px;
+            margin: 0 auto 20px auto;
+            display: block;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
-        .synopsis-text {
-            color: #ccc;
-            line-height: 1.6;
+        .modal-title { font-size: 1.8rem; margin-bottom: 5px; }
+        .modal-year { color: var(--primary-color); font-weight: 600; margin-bottom: 20px; }
+        
+        .synopsis-box {
+            background-color: #222630;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .synopsis-text { line-height: 1.8; color: #ddd; font-size: 0.95rem; }
+
+        /* 🌟 Telegram Button */
+        .watch-btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background: linear-gradient(135deg, #0088cc, #005580);
+            color: white;
+            padding: 15px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+        }
+        .watch-btn:hover {
+            background: linear-gradient(135deg, #00aaff, #006699);
+            transform: scale(1.02);
+        }
+
+        /* 📱 Mobile Responsive adjustments */
+        @media (max-width: 600px) {
+            .movies-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+            .movie-card img { height: 200px; }
+            .modal-content { padding: 20px; }
         }
     </style>
 </head>
 <body>
 
-    <h1>🎬 ကျွန်ုပ်၏ Movie Channel</h1>
+    <header>
+        <h1>🎬 Premium Movies</h1>
+        <p>အကောင်းဆုံး ရုပ်ရှင်များကို Telegram တွင် တိုက်ရိုက်ကြည့်ရှုပါ</p>
+    </header>
     
     <div id="moviesGrid" class="movies-grid">
         </div>
@@ -99,39 +175,45 @@
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
             <img id="modalImg" class="modal-img" src="" alt="Movie Poster">
-            <h2 id="modalTitle"></h2>
-            <p style="color: #0088cc; font-weight: bold;">ထွက်ရှိခုနှစ်: <span id="modalYear"></span></p>
-            <h3>အညွှန်း</h3>
-            <p id="modalSynopsis" class="synopsis-text"></p>
+            
+            <div class="modal-header">
+                <h2 id="modalTitle" class="modal-title"></h2>
+                <p class="modal-year">ထွက်ရှိခုနှစ်: <span id="modalYear"></span></p>
+            </div>
+
+            <div class="synopsis-box">
+                <h3 style="margin-bottom: 10px; font-size: 1.1rem;">အညွှန်း</h3>
+                <p id="modalSynopsis" class="synopsis-text"></p>
+            </div>
+
+            <a id="modalLink" href="#" target="_blank" class="watch-btn">
+                ✈️ Telegram တွင် ကြည့်ရန်
+            </a>
         </div>
     </div>
 
     <script>
-        // Website စပွင့်တာနဲ့ ရုပ်ရှင်တွေကို လှမ်းဆွဲယူမည်
         document.addEventListener("DOMContentLoaded", fetchMovies);
 
         async function fetchMovies() {
             try {
-                // Backend API သို့ လှမ်းတောင်းခြင်း
                 const response = await fetch('/api/movies');
                 const movies = await response.json();
                 
                 const grid = document.getElementById('moviesGrid');
-                grid.innerHTML = ''; // အဟောင်းများရှိပါက ဖျက်ပစ်ရန်
+                grid.innerHTML = ''; 
 
                 movies.forEach(movie => {
-                    // ကတ်တစ်ခုချင်းစီ တည်ဆောက်ခြင်း
                     const card = document.createElement('div');
                     card.className = 'movie-card';
-                    // Telegram ပုံကို ခေါ်ယူရန် ကျွန်ုပ်တို့ရေးခဲ့သော /api/image/ API ကို သုံးထားသည်
                     card.innerHTML = `
                         <img src="/api/image/${movie.posterFileId}" alt="${movie.title}">
-                        <h3>${movie.title}</h3>
+                        <div class="movie-info">
+                            <h3>${movie.title}</h3>
+                            <span>${movie.year}</span>
+                        </div>
                     `;
-                    
-                    // ကတ်ကို နှိပ်လိုက်လျှင် Modal ပွင့်လာစေရန်
                     card.onclick = () => openModal(movie);
-                    
                     grid.appendChild(card);
                 });
             } catch (error) {
@@ -139,26 +221,35 @@
             }
         }
 
-        // Popup Box ဖွင့်ရန် Function
         function openModal(movie) {
             document.getElementById('modalImg').src = `/api/image/${movie.posterFileId}`;
             document.getElementById('modalTitle').innerText = movie.title;
             document.getElementById('modalYear').innerText = movie.year;
             document.getElementById('modalSynopsis').innerText = movie.synopsis;
             
+            // 🌟 Telegram Link ကို Button သို့ ထည့်ပေးခြင်း
+            // အကယ်၍ link မရှိခဲ့လျှင် (အဟောင်းတွေအတွက်) ခလုတ်ကို ဖျောက်ထားမည်
+            const linkBtn = document.getElementById('modalLink');
+            if(movie.telegramLink) {
+                linkBtn.style.display = 'block';
+                linkBtn.href = movie.telegramLink;
+            } else {
+                linkBtn.style.display = 'none';
+            }
+            
             document.getElementById('movieModal').style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Modal ပွင့်နေချိန် နောက်ခံကို scroll မလုပ်နိုင်ရန်
         }
 
-        // Popup Box ပိတ်ရန် Function
         function closeModal() {
             document.getElementById('movieModal').style.display = 'none';
+            document.body.style.overflow = 'auto'; // Scroll ပြန်ဖွင့်ပေးရန်
         }
 
-        // အပြင်ဘက်ကို နှိပ်မိလျှင်လည်း Popup Box ပိတ်သွားစေရန်
         window.onclick = function(event) {
             const modal = document.getElementById('movieModal');
             if (event.target == modal) {
-                modal.style.display = "none";
+                closeModal();
             }
         }
     </script>
