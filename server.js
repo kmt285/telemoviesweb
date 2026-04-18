@@ -33,6 +33,12 @@ const adSchema = new mongoose.Schema({
 });
 const Ad = mongoose.model('Ad', adSchema);
 
+// 🌟 Header Banner ကြော်ငြာအတွက် Schema (အသစ်)
+const bannerSchema = new mongoose.Schema({
+  fileId: String,
+  link: String
+});
+const Banner = mongoose.model('Banner', bannerSchema);
 
 // --- TELEGRAM BOT SETUP ---
 const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
@@ -69,6 +75,24 @@ bot.onText(/\/delad/, async (msg) => {
   } catch (err) {
     bot.sendMessage(chatId, "❌ ကြော်ငြာဖျက်ရာတွင် အမှားဖြစ်နေပါသည်။");
   }
+});
+
+// 🌟 Banner အသစ်ထည့်ရန် Command
+bot.onText(/\/setbanner/, (msg) => {
+  const chatId = msg.chat.id;
+  if (chatId.toString() !== ADMIN_CHAT_ID) return;
+
+  adminState[chatId] = { step: 'WAITING_BANNER_FILE', data: {} };
+  bot.sendMessage(chatId, "🎞 **Header Banner အသစ်** ထည့်ပါမည်။ \n\n**ကြော်ငြာပုံ (သို့) GIF ဖိုင်** ကို ပို့ပေးပါ။ \n*(မှတ်ချက် - GIF ဖြစ်ပါက ပိုမိုကောင်းမွန်စေရန် 'File' အနေဖြင့် ပို့ပေးပါ)*");
+});
+
+// 🌟 Banner အပြီးတိုင် ဖျက်ရန် Command
+bot.onText(/\/delbanner/, async (msg) => {
+  const chatId = msg.chat.id;
+  if (chatId.toString() !== ADMIN_CHAT_ID) return;
+
+  await Banner.deleteMany({});
+  bot.sendMessage(chatId, "🗑 Banner ကြော်ငြာကို Website မှ ဖျက်လိုက်ပါပြီ။");
 });
 
 // 🌟 [၂] ရုပ်ရှင်များကို ပြင်/ဖျက်ရန် Command
@@ -169,6 +193,35 @@ bot.on('message', async (msg) => {
     return;
   }
 
+  // --- 🌟 Banner တင်သည့် စနစ် (Set Banner Steps) ---
+  if (state.step === 'WAITING_BANNER_FILE') {
+    // ပုံမှန် ဓာတ်ပုံ (Photo)၊ ဖိုင် (Document - GIF) နှင့် Animation အားလုံးကို လက်ခံမည်
+    let fileId = null;
+    if (msg.photo) fileId = msg.photo[msg.photo.length - 1].file_id;
+    else if (msg.document) fileId = msg.document.file_id;
+    else if (msg.animation) fileId = msg.animation.file_id;
+
+    if (!fileId) return bot.sendMessage(chatId, "❌ ပုံ သို့မဟုတ် GIF ဖိုင်ကိုသာ ပို့ပေးပါ။");
+
+    state.data.fileId = fileId;
+    state.step = 'WAITING_BANNER_LINK';
+    return bot.sendMessage(chatId, "✅ Banner ဖိုင် ရရှိပါပြီ။ \n\nယခု **ကြော်ငြာ Link** ကို ရိုက်ထည့်ပါ။");
+  }
+
+  if (state.step === 'WAITING_BANNER_LINK' && msg.text) {
+    state.data.link = msg.text;
+    try {
+      await Banner.deleteMany({}); // အဟောင်းဖျက်၍ အသစ်တစ်ခုသာ ထားမည်
+      const newBanner = new Banner(state.data);
+      await newBanner.save();
+      bot.sendMessage(chatId, "🎉 Header Banner အောင်မြင်စွာ တင်ပြီးပါပြီ!");
+    } catch (err) {
+      bot.sendMessage(chatId, "❌ အမှားဖြစ်နေပါသည်။");
+    }
+    delete adminState[chatId];
+    return;
+  }
+
   // --- အသစ်တင်သည့် စနစ် (Add Movie Steps) ---
   if (state.step === 'WAITING_PHOTO' && msg.photo) {
     state.data.posterFileId = msg.photo[msg.photo.length - 1].file_id;
@@ -260,6 +313,12 @@ app.get('/api/views', async (req, res) => {
 app.get('/api/ad', async (req, res) => {
   const ad = await Ad.findOne();
   res.json(ad || { adFileId: null, adLink: '#' }); // ကြော်ငြာမရှိသေးလျှင် null ပို့မည်
+});
+
+// 🌟 Website သို့ Banner ပို့ပေးမည့် API
+app.get('/api/banner', async (req, res) => {
+  const banner = await Banner.findOne();
+  res.json(banner || { fileId: null, link: '#' });
 });
 
 // ရုပ်ရှင်စာရင်း အားလုံးဆွဲယူရန်
