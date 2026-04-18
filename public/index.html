@@ -396,7 +396,14 @@
 
         function showAdPage(telegramLink) {
             closeModal(); // ရုပ်ရှင် Modal ကို ပိတ်မည်
-            
+
+            // 🌟 ကြော်ငြာမရှိလျှင် Ads Page ကို မပြဘဲ Telegram သို့ တိုက်ရိုက်သွားမည်
+            if (!adData || !adData.adFileId) {
+                window.open(telegramLink, '_blank');
+                return;
+            }
+
+            // 🌟 ကြော်ငြာရှိမှသာ အောက်ပါ Ads Page ကို ပြမည်
             const adPage = document.getElementById('adPage');
             const adImg = document.getElementById('adImg');
             const adSponsorLink = document.getElementById('adSponsorLink');
@@ -404,14 +411,9 @@
             const adSeconds = document.getElementById('adSeconds');
             const adContinueBtn = document.getElementById('adContinueBtn');
 
-            // ကြော်ငြာရှိမရှိ စစ်ဆေးပြီး ပြသခြင်း
-            if (adData && adData.adFileId) {
-                adImg.src = `/api/image/${adData.adFileId}`;
-                adImg.style.display = 'block';
-                adSponsorLink.href = adData.adLink || '#';
-            } else {
-                adImg.style.display = 'none'; // Admin က ကြော်ငြာမတင်ထားလျှင် ဖျောက်ထားမည်
-            }
+            adImg.src = `/api/image/${adData.adFileId}`;
+            adImg.style.display = 'block';
+            adSponsorLink.href = adData.adLink || '#';
 
             // UI မူလအတိုင်း ပြန်ထားခြင်း
             adContinueBtn.style.display = 'none';
@@ -419,7 +421,7 @@
             adPage.style.display = 'flex'; // Ads Page ကို ဖွင့်မည်
             document.body.style.overflow = 'hidden';
 
-            let timeLeft = 8; // 🌟 စက္ကန့် သတ်မှတ်ချက်
+            let timeLeft = 8; //  စက္ကန့် သတ်မှတ်ချက်
             adSeconds.innerText = timeLeft;
 
             // Countdown ရေတွက်ခြင်း
@@ -429,16 +431,11 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
-                    adTimer.style.display = 'none'; // Timer ဖျောက်မည်
-                    adContinueBtn.href = telegramLink; // Telegram Link ကို Button သို့ ထည့်မည်
-                    adContinueBtn.style.display = 'block'; // Continue ခလုတ်ပြမည်
+                    adTimer.style.display = 'none'; 
+                    adContinueBtn.href = telegramLink; 
+                    adContinueBtn.style.display = 'block'; 
                 }
             }, 1000);
-        }
-
-        function closeAdPage() {
-            document.getElementById('adPage').style.display = 'none';
-            document.body.style.overflow = 'auto';
         }
     </script>
 
