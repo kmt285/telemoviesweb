@@ -190,7 +190,12 @@
         async function fetchMovies() {
             try {
                 const response = await fetch('/api/movies');
-                allMovies = await response.json();
+                let fetchedMovies = await response.json();
+                
+                // 🌟 (အသစ်ထည့်ထားသောအပိုင်း) ရရှိလာသော ရုပ်ရှင်များကို ကျပန်း (Random) မွှေနှောက်ခြင်း
+                fetchedMovies.sort(() => Math.random() - 0.5);
+                
+                allMovies = fetchedMovies;
                 currentFilteredMovies = allMovies; 
                 renderMoviesAndPagination(); 
             } catch (error) {
