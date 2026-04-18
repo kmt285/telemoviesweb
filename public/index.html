@@ -10,7 +10,7 @@
             --bg-dark: #090a0f;
             --bg-card: #151821;
             --bg-nav: #0d0f14;
-            --primary: #3b82f6; /* Professional Blue */
+            --primary: #3b82f6;
             --primary-hover: #2563eb;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
@@ -26,7 +26,6 @@
             min-height: 100vh;
         }
 
-        /* --- Navigation & Search Bar --- */
         nav {
             background-color: var(--bg-nav);
             border-bottom: 1px solid var(--border-color);
@@ -39,50 +38,18 @@
             z-index: 100;
         }
         
-        .logo {
-            font-size: 1.4rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            color: var(--text-main);
-        }
-        
-        .logo span {
-            color: var(--primary);
-        }
+        .logo { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.5px; }
+        .logo span { color: var(--primary); }
 
-        .search-container {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-        }
-
+        .search-container { position: relative; width: 100%; max-width: 400px; }
         .search-input {
-            width: 100%;
-            padding: 10px 15px;
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: var(--text-main);
-            font-size: 0.95rem;
-            outline: none;
-            transition: all 0.2s ease;
+            width: 100%; padding: 10px 15px; background-color: var(--bg-card);
+            border: 1px solid var(--border-color); border-radius: 6px;
+            color: var(--text-main); font-size: 0.95rem; outline: none; transition: all 0.2s ease;
         }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
 
-        .search-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
-
-        .search-input::placeholder {
-            color: var(--text-muted);
-        }
-
-        /* --- Main Content Grid --- */
-        main {
-            padding: 30px 5%;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+        main { padding: 30px 5%; max-width: 1400px; margin: 0 auto; }
 
         .movies-grid {
             display: grid;
@@ -90,141 +57,88 @@
             gap: 24px;
         }
 
-        /* --- Movie Card --- */
         .movie-card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
+            background-color: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 8px; overflow: hidden; cursor: pointer;
             transition: transform 0.2s ease, border-color 0.2s ease;
+            display: flex; flex-direction: column;
+        }
+        .movie-card:hover { transform: translateY(-4px); border-color: #33394a; }
+        .movie-card img { width: 100%; height: 280px; object-fit: cover; }
+        
+        .movie-info { padding: 16px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .movie-info h3 { font-size: 1rem; font-weight: 600; margin-bottom: 6px; line-height: 1.4; }
+        .movie-info span { font-size: 0.85rem; color: var(--text-muted); }
+
+        .no-results { grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--text-muted); font-size: 1.1rem; }
+
+        /* --- 🌟 Pagination CSS (အသစ်) --- */
+        .pagination {
             display: flex;
-            flex-direction: column;
-        }
-
-        .movie-card:hover {
-            transform: translateY(-4px);
-            border-color: #33394a;
-        }
-
-        .movie-card img {
-            width: 100%;
-            height: 280px;
-            object-fit: cover;
-        }
-
-        .movie-info {
-            padding: 16px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .movie-info h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            line-height: 1.4;
-        }
-
-        .movie-info span {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .no-results {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 50px;
-            color: var(--text-muted);
-            font-size: 1.1rem;
-        }
-
-        /* --- Modal (Popup) --- */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px);
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 40px;
+            flex-wrap: wrap;
         }
-
-        .modal-content {
+        .page-btn {
             background-color: var(--bg-card);
+            color: var(--text-main);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-            display: flex;
-            flex-direction: column;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+        .page-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .page-btn.active { background-color: var(--primary); color: white; border-color: var(--primary); }
+        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Modal Design */
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px); align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background-color: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 12px; width: 90%; max-width: 800px; max-height: 90vh;
+            overflow-y: auto; position: relative; display: flex; flex-direction: column;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         @media (min-width: 768px) {
-            .modal-content {
-                flex-direction: row;
-                overflow: hidden;
-            }
+            .modal-content { flex-direction: row; overflow: hidden; }
             .modal-left { width: 40%; }
             .modal-right { width: 60%; padding: 40px 30px; overflow-y: auto; max-height: 90vh; }
             .modal-left img { height: 100%; width: 100%; object-fit: cover; }
         }
-
         @media (max-width: 767px) {
             .modal-left img { width: 100%; max-height: 350px; object-fit: cover; display: block; }
             .modal-right { padding: 25px 20px; }
         }
 
         .close-btn {
-            position: absolute;
-            right: 20px; top: 15px;
-            color: var(--text-muted);
-            font-size: 28px;
-            font-weight: 300;
-            cursor: pointer;
-            transition: color 0.2s;
-            z-index: 10;
-            background: rgba(0,0,0,0.5);
-            width: 35px; height: 35px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute; right: 20px; top: 15px; color: var(--text-muted);
+            font-size: 28px; cursor: pointer; transition: color 0.2s; z-index: 10;
+            background: rgba(0,0,0,0.5); width: 35px; height: 35px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
         }
-
         .close-btn:hover { color: #fff; background: rgba(0,0,0,0.8); }
 
         .modal-title { font-size: 1.7rem; font-weight: 700; margin-bottom: 8px; line-height: 1.3; }
         .modal-year { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 25px; }
-        
         .synopsis-title { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px; font-weight: 600; }
         .synopsis-text { line-height: 1.7; color: #d1d5db; font-size: 0.95rem; margin-bottom: 30px; }
-
+        
         .watch-btn {
-            display: inline-block;
-            width: 100%;
-            text-align: center;
-            background-color: var(--primary);
-            color: white;
-            padding: 14px 20px;
-            text-decoration: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: background-color 0.2s;
+            display: inline-block; width: 100%; text-align: center;
+            background-color: var(--primary); color: white; padding: 14px 20px;
+            text-decoration: none; border-radius: 6px; font-size: 1rem; font-weight: 500; transition: background-color 0.2s;
         }
-
         .watch-btn:hover { background-color: var(--primary-hover); }
 
-        /* Responsive Nav */
         @media (max-width: 600px) {
             nav { flex-direction: column; gap: 15px; }
             .search-container { max-width: 100%; }
@@ -245,32 +159,31 @@
     <main>
         <div id="moviesGrid" class="movies-grid">
             </div>
+        
+        <div id="pagination" class="pagination"></div>
     </main>
 
     <div id="movieModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
-            
-            <div class="modal-left">
-                <img id="modalImg" src="" alt="Movie Poster">
-            </div>
-            
+            <div class="modal-left"><img id="modalImg" src="" alt="Movie Poster"></div>
             <div class="modal-right">
                 <h2 id="modalTitle" class="modal-title"></h2>
                 <div class="modal-year">Released: <span id="modalYear"></span></div>
-                
                 <div class="synopsis-title">Synopsis</div>
                 <p id="modalSynopsis" class="synopsis-text"></p>
-
-                <a id="modalLink" href="#" target="_blank" class="watch-btn">
-                    Watch on Telegram
-                </a>
+                <a id="modalLink" href="#" target="_blank" class="watch-btn">Watch on Telegram</a>
             </div>
         </div>
     </div>
 
     <script>
-        let allMovies = []; // ရုပ်ရှင် Data များကို ခေတ္တသိမ်းထားမည့် နေရာ (Search လုပ်ရန်)
+        let allMovies = []; 
+        let currentFilteredMovies = []; 
+        
+        // 🌟 Pagination အတွက် Variables များ
+        let currentPage = 1;
+        const moviesPerPage = 12; // တစ်မျက်နှာလျှင် ရုပ်ရှင် (၁၂) ကား ပြမည် (မိမိကြိုက်သလို ပြင်နိုင်သည်)
 
         document.addEventListener("DOMContentLoaded", fetchMovies);
 
@@ -278,23 +191,32 @@
             try {
                 const response = await fetch('/api/movies');
                 allMovies = await response.json();
-                renderMovies(allMovies); // စစချင်း ရုပ်ရှင်အားလုံးကို ပြမည်
+                currentFilteredMovies = allMovies; 
+                renderMoviesAndPagination(); 
             } catch (error) {
                 console.error("Data ဆွဲယူရာတွင် အမှားဖြစ်နေပါသည်: ", error);
             }
         }
 
-        // ရုပ်ရှင်များကို Web ပေါ်တွင် ဖော်ပြမည့် Function
-        function renderMovies(movies) {
+        // 🌟 ရုပ်ရှင်များနှင့် Page ခလုတ်များကို ပေါင်းပြီး ပြမည့် Function
+        function renderMoviesAndPagination() {
             const grid = document.getElementById('moviesGrid');
+            const paginationContainer = document.getElementById('pagination');
             grid.innerHTML = ''; 
+            paginationContainer.innerHTML = '';
 
-            if (movies.length === 0) {
+            if (currentFilteredMovies.length === 0) {
                 grid.innerHTML = `<div class="no-results">No movies found.</div>`;
                 return;
             }
 
-            movies.forEach(movie => {
+            // လက်ရှိ Page အတွက် ပြရမည့် ရုပ်ရှင်များကို ခွဲထုတ်ခြင်း (Slice)
+            const startIndex = (currentPage - 1) * moviesPerPage;
+            const endIndex = startIndex + moviesPerPage;
+            const paginatedMovies = currentFilteredMovies.slice(startIndex, endIndex);
+
+            // ရုပ်ရှင်များကို Grid ထဲ ထည့်ခြင်း
+            paginatedMovies.forEach(movie => {
                 const card = document.createElement('div');
                 card.className = 'movie-card';
                 card.innerHTML = `
@@ -307,16 +229,49 @@
                 card.onclick = () => openModal(movie);
                 grid.appendChild(card);
             });
+
+            // Pagination ခလုတ်များကို တည်ဆောက်ခြင်း
+            renderPagination();
         }
 
-        // Search Bar တွင် စာရိုက်တိုင်း အလုပ်လုပ်မည့် Function
+        // 🌟 Page ခလုတ်များ ဖန်တီးသည့် Function
+        function renderPagination() {
+            const totalPages = Math.ceil(currentFilteredMovies.length / moviesPerPage);
+            const paginationContainer = document.getElementById('pagination');
+
+            if (totalPages <= 1) return; // (၁) မျက်နှာတည်းဆိုလျှင် ခလုတ်များ မပြပါ
+
+            // Previous (ရှေ့သို့) ခလုတ်
+            if (currentPage > 1) {
+                paginationContainer.innerHTML += `<button class="page-btn" onclick="changePage(${currentPage - 1})">« Prev</button>`;
+            }
+
+            // စာမျက်နှာ နံပါတ် ခလုတ်များ (1, 2, 3...)
+            for (let i = 1; i <= totalPages; i++) {
+                paginationContainer.innerHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            }
+
+            // Next (နောက်သို့) ခလုတ်
+            if (currentPage < totalPages) {
+                paginationContainer.innerHTML += `<button class="page-btn" onclick="changePage(${currentPage + 1})">Next »</button>`;
+            }
+        }
+
+        // 🌟 Page နံပါတ် ပြောင်းသည့်အခါ အလုပ်လုပ်မည့် Function
+        function changePage(page) {
+            currentPage = page;
+            renderMoviesAndPagination();
+            // Page အသစ်ပြောင်းတိုင်း အပေါ်ဆုံးသို့ အလိုအလျောက် ပြန်ရွှေ့ပေးမည်
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        }
+
         function handleSearch() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            // ရိုက်ထည့်လိုက်သော စာသားနှင့် တူညီသည့် ရုပ်ရှင်များကို စစ်ထုတ်မည်
-            const filteredMovies = allMovies.filter(movie => 
+            currentFilteredMovies = allMovies.filter(movie => 
                 movie.title.toLowerCase().includes(query)
             );
-            renderMovies(filteredMovies);
+            currentPage = 1; // 🌟 Search လုပ်လျှင် Page 1 သို့ ပြန်သွားမည်
+            renderMoviesAndPagination();
         }
 
         function openModal(movie) {
@@ -327,14 +282,13 @@
             
             const linkBtn = document.getElementById('modalLink');
             if(movie.telegramLink) {
-                linkBtn.style.display = 'block';
-                linkBtn.href = movie.telegramLink;
+                linkBtn.style.display = 'block'; linkBtn.href = movie.telegramLink;
             } else {
                 linkBtn.style.display = 'none';
             }
             
             const modal = document.getElementById('movieModal');
-            modal.style.display = 'flex'; // Changed to flex for center alignment
+            modal.style.display = 'flex'; 
             document.body.style.overflow = 'hidden'; 
         }
 
@@ -345,9 +299,7 @@
 
         window.onclick = function(event) {
             const modal = document.getElementById('movieModal');
-            if (event.target == modal) {
-                closeModal();
-            }
+            if (event.target == modal) { closeModal(); }
         }
     </script>
 
