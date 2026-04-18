@@ -19,7 +19,8 @@ const movieSchema = new mongoose.Schema({
   title: String,
   year: String,
   synopsis: String,
-  posterFileId: String, // Telegram မှ ပုံ၏ ID
+  telegramLink: String, // 🌟 Link သိမ်းရန် အသစ်ထည့်ထားသည်
+  posterFileId: String,
   createdAt: { type: Date, default: Date.now }
 });
 const Movie = mongoose.model('Movie', movieSchema);
@@ -46,45 +47,46 @@ bot.on('message', async (msg) => {
 
   const state = adminState[chatId];
 
-  // အဆင့် ၁: ဓာတ်ပုံ လက်ခံခြင်း
   if (state.step === 'WAITING_PHOTO' && msg.photo) {
-    // အကြည်လင်ဆုံးပုံ (နောက်ဆုံးပုံ) ၏ ID ကိုယူပါမည်
     state.data.posterFileId = msg.photo[msg.photo.length - 1].file_id;
     state.step = 'WAITING_TITLE';
     return bot.sendMessage(chatId, "✅ Poster ရရှိပါပြီ။ \n\nယခု **ရုပ်ရှင်အမည် (Movie Title)** ကို ရိုက်ထည့်ပါ။");
   }
 
-  // အဆင့် ၂: ခေါင်းစဉ် လက်ခံခြင်း
   if (state.step === 'WAITING_TITLE' && msg.text) {
     state.data.title = msg.text;
     state.step = 'WAITING_YEAR';
     return bot.sendMessage(chatId, "✅ Title ရရှိပါပြီ။ \n\nယခု **ထွက်ရှိသည့် ခုနှစ် (Year - ဥပမာ ၂၀၂၆)** ကို ရိုက်ထည့်ပါ။");
   }
 
-  // အဆင့် ၃: ခုနှစ် လက်ခံခြင်း
   if (state.step === 'WAITING_YEAR' && msg.text) {
     state.data.year = msg.text;
     state.step = 'WAITING_SYNOPSIS';
-    return bot.sendMessage(chatId, "✅ ခုနှစ် ရရှိပါပြီ။ \n\nနောက်ဆုံးအနေဖြင့် **အညွှန်း (Synopsis)** ကို ရိုက်ထည့်ပါ။");
+    return bot.sendMessage(chatId, "✅ ခုနှစ် ရရှိပါပြီ။ \n\nယခု **အညွှန်း (Synopsis)** ကို ရိုက်ထည့်ပါ။");
   }
 
-  // အဆင့် ၄: အညွှန်း လက်ခံခြင်းနှင့် Database သို့ သိမ်းခြင်း
+  // 🌟 အညွှန်းရပြီးပါက Link ကို ဆက်တောင်းပါမည်
   if (state.step === 'WAITING_SYNOPSIS' && msg.text) {
     state.data.synopsis = msg.text;
+    state.step = 'WAITING_LINK';
+    return bot.sendMessage(chatId, "✅ အညွှန်း ရရှိပါပြီ။ \n\nနောက်ဆုံးအနေဖြင့် **Telegram Post Link** ကို ရိုက်ထည့်ပါ။");
+  }
+
+  // 🌟 Link ရရှိပါက Database ထဲသို့ သိမ်းပါမည်
+  if (state.step === 'WAITING_LINK' && msg.text) {
+    state.data.telegramLink = msg.text;
     
     try {
       const newMovie = new Movie(state.data);
       await newMovie.save();
-      bot.sendMessage(chatId, `🎉 အောင်မြင်စွာ တင်ပြီးပါပြီ!\n\nခေါင်းစဉ်: ${state.data.title}\nခုနှစ်: ${state.data.year}\n\nWebsite တွင် ဝင်ရောက်ကြည့်ရှုနိုင်ပါပြီ။`);
+      bot.sendMessage(chatId, `🎉 အောင်မြင်စွာ တင်ပြီးပါပြီ!\n\nခေါင်းစဉ်: ${state.data.title}\nWebsite တွင် ဝင်ရောက်ကြည့်ရှုနိုင်ပါပြီ။`);
     } catch (err) {
       bot.sendMessage(chatId, "❌ Database သို့ သိမ်းဆည်းရာတွင် အမှားအယွင်းဖြစ်နေပါသည်။");
     }
     
-    // Process ပြီးသွားသဖြင့် State ဖျက်ပစ်ပါမည်
     delete adminState[chatId];
   }
 });
-
 
 // --- WEBSITE (FRONTEND) အတွက် API များ ---
 
