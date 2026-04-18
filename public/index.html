@@ -215,7 +215,7 @@
             const endIndex = startIndex + moviesPerPage;
             const paginatedMovies = currentFilteredMovies.slice(startIndex, endIndex);
 
-            // ရုပ်ရှင်များကို Grid ထဲ ထည့်ခြင်း
+            // ရုပ်ရှင်များကို Grid ထဲ ထည့်ခြင်း နှင့် Views ပြခြင်း
             paginatedMovies.forEach(movie => {
                 const card = document.createElement('div');
                 card.className = 'movie-card';
@@ -223,13 +223,40 @@
                     <img src="/api/image/${movie.posterFileId}" alt="${movie.title}" loading="lazy">
                     <div class="movie-info">
                         <h3>${movie.title}</h3>
-                        <span>${movie.year}</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                            <span>${movie.year}</span>
+                            
+                            <span id="views-${movie._id}" style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                ...
+                            </span>
+                            
+                        </div>
                     </div>
                 `;
                 card.onclick = () => openModal(movie);
                 grid.appendChild(card);
-            });
 
+                // 🌟 Website ပွင့်လာသည်နှင့် နောက်ကွယ်မှ Views အရေအတွက်ကို လှမ်းတောင်းခြင်း
+                if (movie.telegramLink) {
+                    fetch(`/api/views?link=${encodeURIComponent(movie.telegramLink)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            const viewSpan = document.getElementById(`views-${movie._id}`);
+                            if(viewSpan) {
+                                viewSpan.innerHTML = `
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    ${data.views}
+                                `;
+                            }
+                        })
+                        .catch(err => console.log("Views ဆွဲယူ၍ မရပါ။"));
+                } else {
+                    // Link မရှိလျှင် Views အကွက်ကို ဖျောက်ထားမည်
+                    document.getElementById(`views-${movie._id}`).style.display = 'none';
+                }
+            });
+            
             // Pagination ခလုတ်များကို တည်ဆောက်ခြင်း
             renderPagination();
         }
