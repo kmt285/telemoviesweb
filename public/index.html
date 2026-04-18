@@ -143,6 +143,22 @@
             .modal-right { padding: 25px 20px; }
         }
 
+        /* --- 🌟 Ads Page (Full Screen) --- */
+        .ad-page {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #0b0d13; z-index: 2000; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .ad-container { max-width: 500px; width: 100%; text-align: center; }
+        .ad-image { width: 100%; max-height: 400px; object-fit: contain; border-radius: 12px; margin-bottom: 20px; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .ad-timer { font-size: 1.2rem; font-weight: 500; color: var(--text-muted); margin-bottom: 20px; }
+        .ad-continue-btn {
+            display: none; width: 100%; background-color: var(--primary); color: white;
+            padding: 16px; border-radius: 8px; font-size: 1.1rem; font-weight: 600;
+            text-decoration: none; transition: 0.3s;
+        }
+        .ad-continue-btn:hover { background-color: var(--primary-hover); transform: scale(1.02); }
+
         .close-btn {
             position: absolute; right: 20px; top: 15px; color: var(--text-muted);
             font-size: 28px; cursor: pointer; transition: color 0.2s; z-index: 10;
@@ -192,6 +208,22 @@
                 <p id="modalSynopsis" class="synopsis-text"></p>
                 <a id="modalLink" href="#" target="_blank" class="watch-btn">Watch on Telegram</a>
             </div>
+        </div>
+    </div>
+
+    <div id="adPage" class="ad-page">
+        <div class="ad-container">
+            <p style="color: var(--text-muted); margin-bottom: 12px; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Sponsored Advertisement</p>
+            
+            <a id="adSponsorLink" href="#" target="_blank">
+                <img id="adImg" class="ad-image" src="" alt="Advertisement" style="display: none;">
+            </a>
+            
+            <div id="adTimer" class="ad-timer">Please wait <span id="adSeconds" style="color: white; font-weight: bold;">6</span> seconds...</div>
+            
+            <a id="adContinueBtn" href="#" target="_blank" class="ad-continue-btn" onclick="closeAdPage()">
+                Continue to Telegram
+            </a>
         </div>
     </div>
 
@@ -330,9 +362,14 @@
             document.getElementById('modalYear').innerText = movie.year;
             document.getElementById('modalSynopsis').innerText = movie.synopsis;
             
+            // အဟောင်းနေရာတွင် အစားထိုးရန် (Telegram အစား Ads Page သို့ လွှဲမည်)
             const linkBtn = document.getElementById('modalLink');
             if(movie.telegramLink) {
-                linkBtn.style.display = 'block'; linkBtn.href = movie.telegramLink;
+                linkBtn.style.display = 'block'; 
+                linkBtn.onclick = (e) => {
+                    e.preventDefault(); // တိုက်ရိုက်သွားခြင်းကို တားမည်
+                    showAdPage(movie.telegramLink); // Ads Page သို့ ခေါ်မည်
+                };
             } else {
                 linkBtn.style.display = 'none';
             }
@@ -350,6 +387,58 @@
         window.onclick = function(event) {
             const modal = document.getElementById('movieModal');
             if (event.target == modal) { closeModal(); }
+        }
+
+        let adData = null;
+
+        // Website စပွင့်သည်နှင့် ကြော်ငြာကို ကြိုခေါ်ထားမည် (ပိုမြန်စေရန်)
+        fetch('/api/ad').then(res => res.json()).then(data => adData = data);
+
+        function showAdPage(telegramLink) {
+            closeModal(); // ရုပ်ရှင် Modal ကို ပိတ်မည်
+            
+            const adPage = document.getElementById('adPage');
+            const adImg = document.getElementById('adImg');
+            const adSponsorLink = document.getElementById('adSponsorLink');
+            const adTimer = document.getElementById('adTimer');
+            const adSeconds = document.getElementById('adSeconds');
+            const adContinueBtn = document.getElementById('adContinueBtn');
+
+            // ကြော်ငြာရှိမရှိ စစ်ဆေးပြီး ပြသခြင်း
+            if (adData && adData.adFileId) {
+                adImg.src = `/api/image/${adData.adFileId}`;
+                adImg.style.display = 'block';
+                adSponsorLink.href = adData.adLink || '#';
+            } else {
+                adImg.style.display = 'none'; // Admin က ကြော်ငြာမတင်ထားလျှင် ဖျောက်ထားမည်
+            }
+
+            // UI မူလအတိုင်း ပြန်ထားခြင်း
+            adContinueBtn.style.display = 'none';
+            adTimer.style.display = 'block';
+            adPage.style.display = 'flex'; // Ads Page ကို ဖွင့်မည်
+            document.body.style.overflow = 'hidden';
+
+            let timeLeft = 6; // 🌟 ၆ စက္ကန့် သတ်မှတ်ချက်
+            adSeconds.innerText = timeLeft;
+
+            // Countdown ရေတွက်ခြင်း
+            const countdown = setInterval(() => {
+                timeLeft--;
+                adSeconds.innerText = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    adTimer.style.display = 'none'; // Timer ဖျောက်မည်
+                    adContinueBtn.href = telegramLink; // Telegram Link ကို Button သို့ ထည့်မည်
+                    adContinueBtn.style.display = 'block'; // Continue ခလုတ်ပြမည်
+                }
+            }, 1000);
+        }
+
+        function closeAdPage() {
+            document.getElementById('adPage').style.display = 'none';
+            document.body.style.overflow = 'auto';
         }
     </script>
 
