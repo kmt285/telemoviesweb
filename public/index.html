@@ -283,13 +283,12 @@
             <input type="text" id="searchInput" class="search-input" placeholder="Search movies by title..." onkeyup="handleSearch()">
         </div>
     </nav>
-    <div id="categoryWrapper" class="category-wrapper">
-        </div>
      <div id="headerBannerContainer" class="banner-container" style="display: none;">
         <a id="headerBannerLink" href="#" target="_blank" style="display: block; width: 100%; transition: transform 0.2s ease;">
             <img id="headerBannerImg" src="" alt="Sponsor Banner" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); border: 1px solid var(--border-color);">
         </a>
     </div>
+    <div id="categoryWrapper" class="category-wrapper"></div>
     
     <main>
         <div id="moviesGrid" class="movies-grid">
@@ -332,12 +331,42 @@
         let allMovies = []; 
         let currentFilteredMovies = []; 
         let currentActiveCategory = 'All';
+
+        // 🌟 ကွန်ပျူတာတွင် Mouse ဖြင့် ဖိဆွဲ (Drag) ၍ရအောင် လုပ်မည့်စနစ်
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchMovies(); // မူလလုပ်ဆောင်ချက်
+
+            const slider = document.getElementById('categoryWrapper');
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            slider.addEventListener('mousedown', (e) => {
+                isDown = true;
+                slider.style.cursor = 'grabbing'; // ဆွဲနေစဉ် လက်သီးဆုပ်ပုံပေါ်မည်
+                startX = e.pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            });
+            slider.addEventListener('mouseleave', () => {
+                isDown = false;
+                slider.style.cursor = 'default';
+            });
+            slider.addEventListener('mouseup', () => {
+                isDown = false;
+                slider.style.cursor = 'default';
+            });
+            slider.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - slider.offsetLeft;
+                const walk = (x - startX) * 2; // ဆွဲသည့် အမြန်နှုန်း (2 ဆ)
+                slider.scrollLeft = scrollLeft - walk;
+            });
+        });
         
         // 🌟 Pagination အတွက် Variables များ
         let currentPage = 1;
         const moviesPerPage = 12; // တစ်မျက်နှာလျှင် ရုပ်ရှင် (၁၂) ကား ပြမည် (မိမိကြိုက်သလို ပြင်နိုင်သည်)
-
-        document.addEventListener("DOMContentLoaded", fetchMovies);
 
         // Website ပွင့်သည်နှင့် Banner ကိုဆွဲယူပြီး Auto-slide လုပ်မည်
         fetch('/api/banner')
