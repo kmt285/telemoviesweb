@@ -222,7 +222,6 @@ bot.on('message', async (msg) => {
   if (state.step === 'WAITING_BANNER_LINK' && msg.text) {
     state.data.link = msg.text;
     try {
-      await Banner.deleteMany({}); // အဟောင်းဖျက်၍ အသစ်တစ်ခုသာ ထားမည်
       const newBanner = new Banner(state.data);
       await newBanner.save();
       bot.sendMessage(chatId, "🎉 Header Banner အောင်မြင်စွာ တင်ပြီးပါပြီ!");
@@ -326,10 +325,10 @@ app.get('/api/ad', async (req, res) => {
   res.json(ad || { adFileId: null, adLink: '#' }); // ကြော်ငြာမရှိသေးလျှင် null ပို့မည်
 });
 
-// 🌟 Website သို့ Banner ပို့ပေးမည့် API
+// 🌟 Website သို့ Banner များ 'အားလုံး' ပို့ပေးမည့် API
 app.get('/api/banner', async (req, res) => {
-  const banner = await Banner.findOne();
-  res.json(banner || { fileId: null, link: '#' });
+  const banners = await Banner.find(); // အကုန်လုံးကို ဆွဲယူမည်
+  res.json(banners);
 });
 
 // ရုပ်ရှင်စာရင်း အားလုံးဆွဲယူရန်
