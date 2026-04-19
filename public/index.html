@@ -240,6 +240,39 @@
         }
         .watch-btn:hover { background-color: var(--primary-hover); }
 
+        /* --- 🌟 Category Filter Design --- */
+        .category-wrapper {
+            display: flex;
+            gap: 12px;
+            max-width: 1400px;
+            margin: 20px auto 10px auto;
+            padding: 0 5%;
+            overflow-x: auto;
+            white-space: nowrap;
+            /* Scrollbar ဖျောက်ရန် */
+            -ms-overflow-style: none; scrollbar-width: none;
+        }
+        .category-wrapper::-webkit-scrollbar { display: none; }
+        
+        .cat-btn {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .cat-btn:hover { border-color: var(--primary); color: white; }
+        .cat-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
     </style>
 </head>
 <body>
@@ -250,6 +283,8 @@
             <input type="text" id="searchInput" class="search-input" placeholder="Search movies by title..." onkeyup="handleSearch()">
         </div>
     </nav>
+    <div id="categoryWrapper" class="category-wrapper">
+        </div>
      <div id="headerBannerContainer" class="banner-container" style="display: none;">
         <a id="headerBannerLink" href="#" target="_blank" style="display: block; width: 100%; transition: transform 0.2s ease;">
             <img id="headerBannerImg" src="" alt="Sponsor Banner" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); border: 1px solid var(--border-color);">
@@ -296,6 +331,7 @@
     <script>
         let allMovies = []; 
         let currentFilteredMovies = []; 
+        let currentActiveCategory = 'All';
         
         // 🌟 Pagination အတွက် Variables များ
         let currentPage = 1;
@@ -361,15 +397,57 @@
                 const response = await fetch('/api/movies');
                 let fetchedMovies = await response.json();
                 
-                // 🌟 (အသစ်ထည့်ထားသောအပိုင်း) ရရှိလာသော ရုပ်ရှင်များကို ကျပန်း (Random) မွှေနှောက်ခြင်း
+                // ပုံမှန် Random မွှေနှောက်ခြင်း
                 fetchedMovies.sort(() => Math.random() - 0.5);
                 
                 allMovies = fetchedMovies;
                 currentFilteredMovies = allMovies; 
+                
+                renderCategories(); // 🌟 ခလုတ်များကို အလိုအလျောက် ဖန်တီးမည်
                 renderMoviesAndPagination(); 
             } catch (error) {
                 console.error("Data ဆွဲယူရာတွင် အမှားဖြစ်နေပါသည်: ", error);
             }
+        }
+
+        // 🌟 Category ခလုတ်များကို အလိုအလျောက် ဖန်တီးသည့်စနစ်
+        function renderCategories() {
+            const wrapper = document.getElementById('categoryWrapper');
+            wrapper.innerHTML = '';
+
+            // ရှိသမျှကားတွေထဲက အမျိုးအစားနာမည်တွေကို ဆွဲထုတ်ခြင်း
+            const uniqueCategories = ['All'];
+            allMovies.forEach(movie => {
+                const cat = movie.category || 'Uncategorized'; // ဟောင်းနေသောကားများကို Uncategorized ဟု သတ်မှတ်မည်
+                if (!uniqueCategories.includes(cat)) {
+                    uniqueCategories.push(cat);
+                }
+            });
+
+            // ခလုတ်များ တည်ဆောက်ခြင်း
+            uniqueCategories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = `cat-btn ${currentActiveCategory === cat ? 'active' : ''}`;
+                btn.innerText = cat;
+                btn.onclick = () => filterByCategory(cat);
+                wrapper.appendChild(btn);
+            });
+        }
+
+        // 🌟 Category ခလုတ်နှိပ်လျှင် အလုပ်လုပ်မည့်စနစ်
+        function filterByCategory(category) {
+            currentActiveCategory = category;
+            currentPage = 1; // Page 1 သို့ ပြန်သွားမည်
+            document.getElementById('searchInput').value = ''; // Category ပြောင်းလျှင် Search Bar မှစာများကို ဖျက်မည်
+
+            if (category === 'All') {
+                currentFilteredMovies = allMovies;
+            } else {
+                currentFilteredMovies = allMovies.filter(movie => (movie.category || 'Uncategorized') === category);
+            }
+            
+            renderCategories(); // ခလုတ် အရောင်ပြောင်းရန်
+            renderMoviesAndPagination();
         }
 
         // 🌟 ရုပ်ရှင်များနှင့် Page ခလုတ်များကို ပေါင်းပြီး ပြမည့် Function
