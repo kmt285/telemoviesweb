@@ -97,28 +97,61 @@ bot.onText(/\/delbanner/, async (msg) => {
   bot.sendMessage(chatId, "🗑 Banner ကြော်ငြာကို Website မှ ဖျက်လိုက်ပါပြီ။");
 });
 
-// 🌟 [၂] ရုပ်ရှင်များကို ပြင်/ဖျက်ရန် Command
+// 🌟 [၂] ရုပ်ရှင်များကို ပြင်/ဖျက်ရန် Command (Page ခွဲကြည့်နိုင်သော စနစ်အသစ်)
 bot.onText(/\/manage/, async (msg) => {
   const chatId = msg.chat.id;
   if (chatId.toString() !== ADMIN_CHAT_ID) return;
-
-  // နောက်ဆုံးတင်ထားသော ရုပ်ရှင် ၁၀ ကားကို ဆွဲယူမည်
-  const movies = await Movie.find().sort({ createdAt: -1 }).limit(10);
-  if(movies.length === 0) return bot.sendMessage(chatId, "🤷‍♂️ ရုပ်ရှင် မရှိသေးပါ။");
-
-  // ရုပ်ရှင်နာမည်များကို Bot ခလုတ်များအဖြစ် ပြောင်းလဲမည်
-  const keyboard = movies.map(m => ([{ text: `🎬 ${m.title}`, callback_data: `select_${m._id}` }]));
-  
-  bot.sendMessage(chatId, "⚙️ ပြင်ဆင်/ဖျက်လိုသော ရုပ်ရှင်ကို ရွေးပါ (နောက်ဆုံး ၁၀ ကား)", {
-      reply_markup: { inline_keyboard: keyboard }
-  });
+  await sendManagePage(chatId, 0); // ပထမဆုံး Page (0) မှ စတင်ပြမည်
 });
+
+// 🌟 Manage စာမျက်နှာများကို ဖန်တီးပေးမည့် Function အသစ်
+async function sendManagePage(chatId, page, messageId = null) {
+    const limit = 10; // တစ်ခါပြလျှင် ၁၀ ကားပြမည်
+    const skip = page * limit;
+
+    const totalMovies = await Movie.countDocuments();
+    const movies = await Movie.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
+
+    if (movies.length === 0 && page === 0) {
+        return bot.sendMessage(chatId, "🤷‍♂️ ရုပ်ရှင် မရှိသေးပါ။");
+    }
+
+    // ရုပ်ရှင်များကို ခလုတ်အဖြစ်ပြောင်းခြင်း
+    const keyboard = movies.map(m => ([{ text: `🎬 ${m.title}`, callback_data: `select_${m._id}` }]));
+
+    // 🌟 Next / Prev ခလုတ်များ တည်ဆောက်ခြင်း
+    const paginationRow = [];
+    if (page > 0) {
+        paginationRow.push({ text: "⬅️ Prev", callback_data: `managePage_${page - 1}` });
+    }
+    if (skip + limit < totalMovies) {
+        paginationRow.push({ text: "Next ➡️", callback_data: `managePage_${page + 1}` });
+    }
+    if (paginationRow.length > 0) {
+        keyboard.push(paginationRow);
+    }
+
+    const text = `⚙️ ပြင်ဆင်/ဖျက်လိုသော ရုပ်ရှင်ကို ရွေးပါ (Page ${page + 1})`;
+    const opts = { reply_markup: { inline_keyboard: keyboard } };
+
+    // အသစ်ပို့မည် (သို့) ရှိပြီးသားစာကို ပြင်မည်
+    if (messageId) {
+        bot.editMessageText(text, { chat_id: chatId, message_id: messageId, ...opts });
+    } else {
+        bot.sendMessage(chatId, text, opts);
+    }
+}
 
 // 🌟 [၃] Bot မှ ခလုတ်များ နှိပ်သောအခါ အလုပ်လုပ်မည့်စနစ်
 bot.on('callback_query', async (query) => {
   const chatId = query.message.chat.id;
   const data = query.data; // ဥပမာ - select_123, del_123
   const messageId = query.message.message_id;
+
+  if (data.startsWith('managePage_')) {
+      const page = parseInt(data.split('_')[1]);
+      return await sendManagePage(chatId, page, messageId);
+  }
 
   // ကားတစ်ကားကို ရွေးလိုက်သောအခါ (ရွေးချယ်စရာ ခလုတ်များ ပြမည်)
   if (data.startsWith('select_')) {
