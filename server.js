@@ -272,30 +272,37 @@ bot.on('message', async (msg) => {
     return;
   }
 
-  // --- အသစ်တင်သည့် စနစ် (Add Movie Steps) ---
+  // --- 🌟 အသစ်တင်သည့် စနစ် (Add Movie Steps) ---
   if (state.step === 'WAITING_PHOTO' && msg.photo) {
     state.data.posterFileId = msg.photo[msg.photo.length - 1].file_id;
     state.step = 'WAITING_TITLE';
     return bot.sendMessage(chatId, "✅ Poster ရရှိပါပြီ။ \n\nယခု **ရုပ်ရှင်အမည် (Movie Title)** ကို ရိုက်ထည့်ပါ။");
   }
+  
   if (state.step === 'WAITING_TITLE' && msg.text) {
     state.data.title = msg.text;
     state.step = 'WAITING_YEAR';
     return bot.sendMessage(chatId, "✅ Title ရရှိပါပြီ။ \n\nယခု **ထွက်ရှိသည့် ခုနှစ် (Year)** ကို ရိုက်ထည့်ပါ။");
   }
   
-  // 🌟 အညွှန်းလက်ခံပြီးပါက Category တောင်းမည်
+  if (state.step === 'WAITING_YEAR' && msg.text) {
+    state.data.year = msg.text;
+    state.step = 'WAITING_SYNOPSIS';
+    return bot.sendMessage(chatId, "✅ ခုနှစ် ရရှိပါပြီ။ \n\nယခု **အညွှန်း (Synopsis)** ကို ရိုက်ထည့်ပါ။");
+  }
+  
   if (state.step === 'WAITING_SYNOPSIS' && msg.text) {
     state.data.synopsis = msg.text;
     state.step = 'WAITING_CATEGORY';
     return bot.sendMessage(chatId, "✅ အညွှန်း ရရှိပါပြီ။ \n\nယခု **ရုပ်ရှင်အမျိုးအစား (Category)** ဥပမာ - Action, Comedy, Horror ကို ရိုက်ထည့်ပါ။");
   }
-
-  if (state.step === 'WAITING_SYNOPSIS' && msg.text) {
-    state.data.synopsis = msg.text;
+  
+  if (state.step === 'WAITING_CATEGORY' && msg.text) {
+    state.data.category = msg.text;
     state.step = 'WAITING_LINK';
-    return bot.sendMessage(chatId, "✅ အညွှန်း ရရှိပါပြီ။ \n\nနောက်ဆုံးအနေဖြင့် **Telegram Post Link** ကို ရိုက်ထည့်ပါ။");
+    return bot.sendMessage(chatId, "✅ အမျိုးအစား ရရှိပါပြီ။ \n\nနောက်ဆုံးအနေဖြင့် **Telegram Post Link** ကို ရိုက်ထည့်ပါ။");
   }
+  
   if (state.step === 'WAITING_LINK' && msg.text) {
     state.data.telegramLink = msg.text;
     try {
@@ -308,7 +315,7 @@ bot.on('message', async (msg) => {
     delete adminState[chatId];
     return;
   }
-
+  
   // --- ပြင်ဆင်သည့် စနစ် (Edit Movie Steps) ---
   try {
       if (state.step === 'EDIT_TITLE' && msg.text) {
