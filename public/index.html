@@ -418,16 +418,16 @@
             const uniqueCategories = ['All'];
             
             allMovies.forEach(movie => {
-                const rawCat = movie.category || 'Uncategorized';
-                
-                // 🌟 "Action, Comedy" စသည်ဖြင့် လာသောစာများကို ကော်မာ (,) ဖြင့် ခွဲထုတ်မည်
-                const catArray = rawCat.split(',').map(c => c.trim()).filter(c => c !== '');
-                
-                catArray.forEach(cat => {
-                    if (!uniqueCategories.includes(cat)) {
-                        uniqueCategories.push(cat);
-                    }
-                });
+                // 🌟 Category ရှိမှသာ ခွဲထုတ်မည် (Uncategorized ဆိုသောစာသား ပါလာခဲ့လျှင်လည်း ဖယ်ထုတ်မည်)
+                if (movie.category && movie.category.trim() !== '' && movie.category !== 'Uncategorized') {
+                    const catArray = movie.category.split(',').map(c => c.trim()).filter(c => c !== '');
+                    
+                    catArray.forEach(cat => {
+                        if (!uniqueCategories.includes(cat)) {
+                            uniqueCategories.push(cat);
+                        }
+                    });
+                }
             });
 
             // ခလုတ်များ တည်ဆောက်ခြင်း
@@ -447,12 +447,13 @@
             document.getElementById('searchInput').value = ''; // Search Bar ကို ရှင်းလင်းမည်
 
             if (category === 'All') {
-                currentFilteredMovies = allMovies;
+                // 🌟 All နှိပ်ပါက Category မပါသော ကားဟောင်းများရော၊ အသစ်များရော အကုန်ပေါ်မည်
+                currentFilteredMovies = allMovies; 
             } else {
-                // 🌟 ရုပ်ရှင်၏ Category အစုအဝေးထဲတွင် ရွေးချယ်ထားသော Category ပါ/မပါ စစ်ဆေးမည်
                 currentFilteredMovies = allMovies.filter(movie => {
-                    const rawCat = movie.category || 'Uncategorized';
-                    const catArray = rawCat.split(',').map(c => c.trim());
+                    // 🌟 Category မရှိသော ကားများကို All မှလွဲ၍ အခြားခလုတ်များတွင် မပြပါ
+                    if (!movie.category) return false; 
+                    const catArray = movie.category.split(',').map(c => c.trim());
                     return catArray.includes(category);
                 });
             }
