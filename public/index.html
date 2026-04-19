@@ -129,23 +129,54 @@
             align-items: center;
         }
 
-        /* 🌟 Banner Slider Animation (အသစ်) */
-        .banner-slide {
-            display: none;
+       /* Banner Container ၏ Responsive အချိုးအစားများ */
+        .banner-container {
+            position: relative;
+            overflow: hidden;
             width: 100%;
-            animation: fadeBanner 0.8s ease-in-out;
+            max-width: 1400px;
+            margin: 20px auto 0 auto;
+            aspect-ratio: 9 / 1; /* ကွန်ပျူတာအတွက် 1:9 အချိုး */
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-card);
         }
-        @keyframes fadeBanner {
-            from { opacity: 0.2; }
-            to { opacity: 1; }
+
+        /* ဖုန်းနှင့် Tablet များအတွက် Banner ကို အနည်းငယ် ပိုကျယ်ပေးမည် (စာဖတ်ရလွယ်စေရန်) */
+        @media (max-width: 768px) {
+            .banner-container { aspect-ratio: 5 / 1; }
         }
+        @media (max-width: 480px) {
+            .banner-container { aspect-ratio: 4 / 1; margin-top: 15px; }
+        }
+
+        /* ညာမှဘယ်သို့ Smooth Slide ဖြစ်စေမည့် Animation */
+        .banner-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: translateX(100%); /* မူလတွင် ညာဘက်သို့ ဖွက်ထားမည် */
+            transition: transform 0.6s ease-in-out; /* 0.6s ဖြင့် ချောမွေ့စွာ ရွေ့မည် */
+            display: block;
+        }
+
+        /* လက်ရှိပြသမည့်ပုံ */
+        .banner-slide.active {
+            transform: translateX(0);
+        }
+
+        /* ပြီးသွားသောပုံကို ဘယ်ဘက်သို့ တွန်းထုတ်မည် */
+        .banner-slide.prev {
+            transform: translateX(-100%);
+        }
+
         .banner-media {
             width: 100%;
-            height: 150px;
+            height: 100%;
             object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            border: 1px solid var(--border-color);
+            pointer-events: none;
         }
 
         /* Modal Design */
@@ -218,7 +249,7 @@
             <input type="text" id="searchInput" class="search-input" placeholder="Search movies by title..." onkeyup="handleSearch()">
         </div>
     </nav>
-     <div id="headerBannerContainer" style="display: none; width: 100%; max-width: 1400px; margin: 20px auto 0 auto; padding: 0 5%;">
+     <div id="headerBannerContainer" class="banner-container" style="display: none;">
         <a id="headerBannerLink" href="#" target="_blank" style="display: block; width: 100%; transition: transform 0.2s ease;">
             <img id="headerBannerImg" src="" alt="Sponsor Banner" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); border: 1px solid var(--border-color);">
         </a>
@@ -271,54 +302,58 @@
 
         document.addEventListener("DOMContentLoaded", fetchMovies);
 
-        // 🌟 Website ပွင့်သည်နှင့် Banner များကို လှမ်းဆွဲပြီး Auto-slider ဖြင့်ပြမည်
+        // Website ပွင့်သည်နှင့် Banner ကိုဆွဲယူပြီး Auto-slide လုပ်မည်
         fetch('/api/banner')
             .then(res => res.json())
             .then(banners => {
                 const container = document.getElementById('headerBannerContainer');
                 
                 if (banners && banners.length > 0) {
-                    container.innerHTML = ''; // အဟောင်းများရှိလျှင် ရှင်းလင်းမည်
+                    container.innerHTML = ''; 
                     container.style.display = 'block';
 
-                    // 🌟 Banner အကုန်လုံးကို Container ထဲသို့ ထည့်ခြင်း
+                    // Banner အားလုံးကို ထည့်သွင်းခြင်း
                     banners.forEach((banner, index) => {
                         const linkWrap = document.createElement('a');
                         linkWrap.href = banner.link || '#';
-                        linkWrap.className = 'banner-slide';
+                        linkWrap.target = '_blank'; // Link ကို Tab အသစ်ဖြင့် ဖွင့်မည်
                         
-                        // ပထမဆုံး Banner ကိုသာ အရင်ဆုံး ဖော်ပြထားမည်
-                        if (index === 0) linkWrap.style.display = 'block';
-
+                        // ပထမဆုံးပုံကို 'active' ပေးထားပြီး ကျန်ပုံများကို ညာဘက်တွင် စောင့်ခိုင်းထားမည်
+                        linkWrap.className = index === 0 ? 'banner-slide active' : 'banner-slide';
+                        
                         if (banner.isVideo) {
-                            linkWrap.innerHTML = `<video src="/api/image/${banner.fileId}" class="banner-media" autoplay loop muted playsinline style="pointer-events: none;"></video>`;
+                            linkWrap.innerHTML = `<video src="/api/image/${banner.fileId}" class="banner-media" autoplay loop muted playsinline></video>`;
                         } else {
                             linkWrap.innerHTML = `<img src="/api/image/${banner.fileId}" class="banner-media" alt="Sponsor Banner">`;
                         }
                         container.appendChild(linkWrap);
                     });
 
-                    // 🌟 Banner တစ်ခုထက်ပိုပါက (၄) စက္ကန့်တစ်ခါ အလိုအလျောက် ပြောင်းပေးမည်
+                    // Banner (၁) ပုံထက်ပိုပါက Slide စနစ်ကို အလုပ်လုပ်စေမည်
                     if (banners.length > 1) {
                         let currentBannerIndex = 0;
                         const slides = container.querySelectorAll('.banner-slide');
                         
                         setInterval(() => {
-                            // လက်ရှိပြနေသော ပုံကို ဖျောက်မည်
-                            slides[currentBannerIndex].style.display = 'none';
-                            
-                            // နောက်တစ်ပုံသို့ ကူးမည်
+                            const prevIndex = currentBannerIndex;
                             currentBannerIndex = (currentBannerIndex + 1) % slides.length;
                             
-                            // နောက်တစ်ပုံကို ပြမည် (CSS Animation ဖြင့် ညင်သာစွာ ပေါ်လာမည်)
-                            slides[currentBannerIndex].style.display = 'block';
-                        }, 4000); // ၄၀၀၀ = ၄ စက္ကန့် (မိမိစိတ်ကြိုက် ပြင်နိုင်သည်)
+                            // လက်ရှိပုံကို ဘယ်ဘက်သို့ တွန်းထုတ်မည်
+                            slides[prevIndex].className = 'banner-slide prev';
+                            
+                            // နောက်လာမည့်ပုံကို ညာဘက်တွင် အဆင်သင့်ပြင်မည် (Animation မပါဘဲ ချက်ချင်းရွှေ့ရန်)
+                            slides[currentBannerIndex].className = 'banner-slide';
+                            void slides[currentBannerIndex].offsetWidth; // Browser ကို Force Reflow လုပ်ခိုင်းခြင်း
+                            
+                            // ညာဘက်မှနေ၍ အလယ်သို့ Smooth Slide ဖြင့် ဝင်လာစေမည်
+                            slides[currentBannerIndex].className = 'banner-slide active';
+                        }, 4000); // ၄ စက္ကန့် တစ်ခါ ပြောင်းမည်
                     }
                 } else {
                     container.style.display = 'none';
                 }
             })
-            .catch(err => console.log("Banner data loading error"));
+            .catch(err => console.log("Banner loading error"));
 
         async function fetchMovies() {
             try {
