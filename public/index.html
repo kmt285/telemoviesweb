@@ -415,13 +415,19 @@
             const wrapper = document.getElementById('categoryWrapper');
             wrapper.innerHTML = '';
 
-            // ရှိသမျှကားတွေထဲက အမျိုးအစားနာမည်တွေကို ဆွဲထုတ်ခြင်း
             const uniqueCategories = ['All'];
+            
             allMovies.forEach(movie => {
-                const cat = movie.category || 'Uncategorized'; // ဟောင်းနေသောကားများကို Uncategorized ဟု သတ်မှတ်မည်
-                if (!uniqueCategories.includes(cat)) {
-                    uniqueCategories.push(cat);
-                }
+                const rawCat = movie.category || 'Uncategorized';
+                
+                // 🌟 "Action, Comedy" စသည်ဖြင့် လာသောစာများကို ကော်မာ (,) ဖြင့် ခွဲထုတ်မည်
+                const catArray = rawCat.split(',').map(c => c.trim()).filter(c => c !== '');
+                
+                catArray.forEach(cat => {
+                    if (!uniqueCategories.includes(cat)) {
+                        uniqueCategories.push(cat);
+                    }
+                });
             });
 
             // ခလုတ်များ တည်ဆောက်ခြင်း
@@ -438,15 +444,20 @@
         function filterByCategory(category) {
             currentActiveCategory = category;
             currentPage = 1; // Page 1 သို့ ပြန်သွားမည်
-            document.getElementById('searchInput').value = ''; // Category ပြောင်းလျှင် Search Bar မှစာများကို ဖျက်မည်
+            document.getElementById('searchInput').value = ''; // Search Bar ကို ရှင်းလင်းမည်
 
             if (category === 'All') {
                 currentFilteredMovies = allMovies;
             } else {
-                currentFilteredMovies = allMovies.filter(movie => (movie.category || 'Uncategorized') === category);
+                // 🌟 ရုပ်ရှင်၏ Category အစုအဝေးထဲတွင် ရွေးချယ်ထားသော Category ပါ/မပါ စစ်ဆေးမည်
+                currentFilteredMovies = allMovies.filter(movie => {
+                    const rawCat = movie.category || 'Uncategorized';
+                    const catArray = rawCat.split(',').map(c => c.trim());
+                    return catArray.includes(category);
+                });
             }
             
-            renderCategories(); // ခလုတ် အရောင်ပြောင်းရန်
+            renderCategories(); 
             renderMoviesAndPagination();
         }
 
