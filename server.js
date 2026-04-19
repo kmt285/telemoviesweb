@@ -20,8 +20,9 @@ const movieSchema = new mongoose.Schema({
   title: String,
   year: String,
   synopsis: String,
-  telegramLink: String, // 🌟 Link သိမ်းရန် အသစ်ထည့်ထားသည်
+  telegramLink: String, 
   posterFileId: String,
+  category: { type: String, default: "Uncategorized" },
   createdAt: { type: Date, default: Date.now }
 });
 const Movie = mongoose.model('Movie', movieSchema);
@@ -130,6 +131,7 @@ bot.on('callback_query', async (query) => {
               inline_keyboard: [
                   [{ text: "✏️ Title ပြင်မည်", callback_data: `editTitle_${id}` }, { text: "✏️ ခုနှစ် ပြင်မည်", callback_data: `editYear_${id}` }],
                   [{ text: "✏️ အညွှန်း ပြင်မည်", callback_data: `editSyn_${id}` }, { text: "🔗 Link ပြင်မည်", callback_data: `editLink_${id}` }],
+                  [{ text: "🏷 Category ပြင်မည်", callback_data: `editCat_${id}` }], 
                   [{ text: "🗑 အပြီးတိုင် ဖျက်မည်", callback_data: `del_${id}` }]
               ]
           }
@@ -159,6 +161,11 @@ bot.on('callback_query', async (query) => {
       const id = data.split('_')[1];
       adminState[chatId] = { step: 'EDIT_SYNOPSIS', movieId: id };
       bot.sendMessage(chatId, "✏️ **အညွှန်းအသစ်** ကို ရိုက်ထည့်ပါ။");
+  }
+  if (data.startsWith('editCat_')) {
+      const id = data.split('_')[1];
+      adminState[chatId] = { step: 'EDIT_CATEGORY', movieId: id };
+      bot.sendMessage(chatId, "🏷 **Category အသစ်** ကို ရိုက်ထည့်ပါ။");
   }
   if (data.startsWith('editLink_')) {
       const id = data.split('_')[1];
@@ -243,11 +250,14 @@ bot.on('message', async (msg) => {
     state.step = 'WAITING_YEAR';
     return bot.sendMessage(chatId, "✅ Title ရရှိပါပြီ။ \n\nယခု **ထွက်ရှိသည့် ခုနှစ် (Year)** ကို ရိုက်ထည့်ပါ။");
   }
-  if (state.step === 'WAITING_YEAR' && msg.text) {
-    state.data.year = msg.text;
-    state.step = 'WAITING_SYNOPSIS';
-    return bot.sendMessage(chatId, "✅ ခုနှစ် ရရှိပါပြီ။ \n\nယခု **အညွှန်း (Synopsis)** ကို ရိုက်ထည့်ပါ။");
+  
+  // 🌟 အညွှန်းလက်ခံပြီးပါက Category တောင်းမည်
+  if (state.step === 'WAITING_SYNOPSIS' && msg.text) {
+    state.data.synopsis = msg.text;
+    state.step = 'WAITING_CATEGORY';
+    return bot.sendMessage(chatId, "✅ အညွှန်း ရရှိပါပြီ။ \n\nယခု **ရုပ်ရှင်အမျိုးအစား (Category)** ဥပမာ - Action, Comedy, Horror ကို ရိုက်ထည့်ပါ။");
   }
+
   if (state.step === 'WAITING_SYNOPSIS' && msg.text) {
     state.data.synopsis = msg.text;
     state.step = 'WAITING_LINK';
@@ -281,6 +291,11 @@ bot.on('message', async (msg) => {
       else if (state.step === 'EDIT_SYNOPSIS' && msg.text) {
           await Movie.findByIdAndUpdate(state.movieId, { synopsis: msg.text });
           bot.sendMessage(chatId, "✅ အညွှန်း အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီ။");
+          delete adminState[chatId];
+      }
+      else if (state.step === 'EDIT_CATEGORY' && msg.text) {
+          await Movie.findByIdAndUpdate(state.movieId, { category: msg.text });
+          bot.sendMessage(chatId, "✅ Category အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီ။");
           delete adminState[chatId];
       }
       else if (state.step === 'EDIT_LINK' && msg.text) {
