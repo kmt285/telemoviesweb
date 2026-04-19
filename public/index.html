@@ -119,6 +119,16 @@
         .page-btn.active { background-color: var(--primary); color: white; border-color: var(--primary); }
         .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+        /* 🌟 Pagination အစက်လေးများအတွက် ဒီဇိုင်း */
+        .page-dots {
+            color: var(--text-muted);
+            padding: 8px 4px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+        }
+
         /* Modal Design */
         .modal {
             display: none; position: fixed; z-index: 1000; left: 0; top: 0;
@@ -341,27 +351,67 @@
             renderPagination();
         }
 
-        // 🌟 Page ခလုတ်များ ဖန်တီးသည့် Function
+        // 🌟 Page ခလုတ်များ ဖန်တီးသည့် Function (Smart Pagination အသစ်)
         function renderPagination() {
             const totalPages = Math.ceil(currentFilteredMovies.length / moviesPerPage);
             const paginationContainer = document.getElementById('pagination');
 
             if (totalPages <= 1) return; // (၁) မျက်နှာတည်းဆိုလျှင် ခလုတ်များ မပြပါ
 
+            let buttonsHTML = '';
+
             // Previous (ရှေ့သို့) ခလုတ်
             if (currentPage > 1) {
-                paginationContainer.innerHTML += `<button class="page-btn" onclick="changePage(${currentPage - 1})">« Prev</button>`;
+                buttonsHTML += `<button class="page-btn" onclick="changePage(${currentPage - 1})">« Prev</button>`;
             }
 
-            // စာမျက်နှာ နံပါတ် ခလုတ်များ (1, 2, 3...)
-            for (let i = 1; i <= totalPages; i++) {
-                paginationContainer.innerHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            // 🌟 ပြသမည့် Page နံပါတ်များကို တွက်ချက်ခြင်း (ဥပမာ 1 ... 4 5 6 ... 100)
+            let startPage, endPage;
+            if (totalPages <= 5) {
+                // Page ၅ မျက်နှာအောက် ဆိုလျှင် အကုန်ပြမည်
+                startPage = 1;
+                endPage = totalPages;
+            } else {
+                // Page ၅ မျက်နှာထက် ကျော်လျှင် အလယ်ကိုပဲ ရွေးပြမည်
+                if (currentPage <= 3) {
+                    startPage = 1;
+                    endPage = 4;
+                } else if (currentPage + 2 >= totalPages) {
+                    startPage = totalPages - 3;
+                    endPage = totalPages;
+                } else {
+                    startPage = currentPage - 1;
+                    endPage = currentPage + 1;
+                }
+            }
+
+            // ပထမဆုံး Page (1) နှင့် အစက်များ (...)
+            if (startPage > 1) {
+                buttonsHTML += `<button class="page-btn" onclick="changePage(1)">1</button>`;
+                if (startPage > 2) {
+                    buttonsHTML += `<span class="page-dots">...</span>`;
+                }
+            }
+
+            // အလယ် Page နံပါတ်များ
+            for (let i = startPage; i <= endPage; i++) {
+                buttonsHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            }
+
+            // နောက်ဆုံး Page နှင့် အစက်များ (...)
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    buttonsHTML += `<span class="page-dots">...</span>`;
+                }
+                buttonsHTML += `<button class="page-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
             }
 
             // Next (နောက်သို့) ခလုတ်
             if (currentPage < totalPages) {
-                paginationContainer.innerHTML += `<button class="page-btn" onclick="changePage(${currentPage + 1})">Next »</button>`;
+                buttonsHTML += `<button class="page-btn" onclick="changePage(${currentPage + 1})">Next »</button>`;
             }
+
+            paginationContainer.innerHTML = buttonsHTML;
         }
 
         // 🌟 Page နံပါတ် ပြောင်းသည့်အခါ အလုပ်လုပ်မည့် Function
