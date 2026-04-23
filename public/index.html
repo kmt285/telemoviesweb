@@ -282,6 +282,17 @@
             border-color: var(--primary);
             box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
         }
+        /* 🌟 Porn Category အတွက် သီးသန့် အနီရောင်ဒီဇိုင်း */
+        .cat-btn.red-btn:hover {
+            border-color: #ef4444; 
+            color: #ef4444; 
+        }
+        .cat-btn.red-btn.active {
+            background-color: #ef4444;
+            color: white;
+            border-color: #ef4444;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
 
     </style>
 </head>
@@ -491,7 +502,6 @@
             const uniqueCategories = ['All'];
             
             allMovies.forEach(movie => {
-                // 🌟 Category ရှိမှသာ ခွဲထုတ်မည် (Uncategorized ဆိုသောစာသား ပါလာခဲ့လျှင်လည်း ဖယ်ထုတ်မည်)
                 if (movie.category && movie.category.trim() !== '' && movie.category !== 'Uncategorized') {
                     const catArray = movie.category.split(',').map(c => c.trim()).filter(c => c !== '');
                     
@@ -506,7 +516,14 @@
             // ခလုတ်များ တည်ဆောက်ခြင်း
             uniqueCategories.forEach(cat => {
                 const btn = document.createElement('button');
-                btn.className = `cat-btn ${currentActiveCategory === cat ? 'active' : ''}`;
+                
+                // 🌟 Category နာမည်သည် Porn ဖြစ်ခဲ့လျှင် အနီရောင် Class (red-btn) ကို ထည့်ပေးမည်
+                let extraClass = '';
+                if (cat.toLowerCase() === 'porn') {
+                    extraClass = 'red-btn';
+                }
+                
+                btn.className = `cat-btn ${extraClass} ${currentActiveCategory === cat ? 'active' : ''}`;
                 btn.innerText = cat;
                 btn.onclick = () => filterByCategory(cat);
                 wrapper.appendChild(btn);
