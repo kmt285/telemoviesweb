@@ -443,12 +443,13 @@
                 fetchedMovies.sort(() => Math.random() - 0.5);
                 
                 allMovies = fetchedMovies;
-                currentFilteredMovies = allMovies; 
                 
                 renderCategories(); 
-                renderMoviesAndPagination(); 
 
-                // 🌟 Website ပွင့်လာစဉ် URL တွင် ?movie=id ပါလာခဲ့လျှင် ထိုကားကို အလိုအလျောက် ဖွင့်ပြမည်
+                // 🌟 Website စပွင့်သည်နှင့် 'All' Filter ကို အလိုအလျောက် ခေါ်ပေးပြီး Porn များကို ဖျောက်ထားမည်
+                filterByCategory('All');
+
+                // (URL မှ Shared Link ကို စစ်ဆေးသည့်အပိုင်း)
                 const urlParams = new URLSearchParams(window.location.search);
                 const sharedMovieId = urlParams.get('movie');
                 if (sharedMovieId) {
@@ -519,12 +520,18 @@
             document.getElementById('searchInput').value = ''; // Search Bar ကို ရှင်းလင်းမည်
 
             if (category === 'All') {
-                // 🌟 All နှိပ်ပါက Category မပါသော ကားဟောင်းများရော၊ အသစ်များရော အကုန်ပေါ်မည်
-                currentFilteredMovies = allMovies; 
-            } else {
+                // 🌟 'All' ကို ရွေးထားလျှင် 'Porn' (သို့မဟုတ် 'porn') ပါသော ကားများကို ဖယ်ထုတ်မည်
                 currentFilteredMovies = allMovies.filter(movie => {
-                    // 🌟 Category မရှိသော ကားများကို All မှလွဲ၍ အခြားခလုတ်များတွင် မပြပါ
-                    if (!movie.category) return false; 
+                    if (!movie.category) return true; // Category မပါသော ကားဟောင်းများ ပြမည်
+                    
+                    // စာလုံးအကြီး/အသေး ရောထည့်ထားခဲ့လျှင်ပါ အလုပ်လုပ်စေရန် toLowerCase() သုံးထားသည်
+                    const catArray = movie.category.split(',').map(c => c.trim().toLowerCase());
+                    return !catArray.includes('porn'); // 'porn' မပါမှသာ ပြမည်
+                });
+            } else {
+                // 🌟 အခြား Category များ (Porn အပါအဝင်) ကို နှိပ်လျှင် သက်ဆိုင်ရာကားကိုသာ ပြမည်
+                currentFilteredMovies = allMovies.filter(movie => {
+                    if (!movie.category) return false;
                     const catArray = movie.category.split(',').map(c => c.trim());
                     return catArray.includes(category);
                 });
@@ -533,7 +540,6 @@
             renderCategories(); 
             renderMoviesAndPagination();
         }
-
         // 🌟 ရုပ်ရှင်များနှင့် Page ခလုတ်များကို ပေါင်းပြီး ပြမည့် Function
         function renderMoviesAndPagination() {
             const grid = document.getElementById('moviesGrid');
