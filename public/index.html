@@ -240,6 +240,16 @@
         }
         .watch-btn:hover { background-color: var(--primary-hover); }
 
+        /* --- 🌟 Share Button CSS (အသစ်) --- */
+        .share-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 100%; background-color: transparent; color: var(--text-main);
+            border: 1px solid var(--border-color); padding: 12px; border-radius: 6px;
+            font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: all 0.2s;
+            margin-top: 10px; gap: 8px;
+        }
+        .share-btn:hover { border-color: var(--primary); color: var(--primary); }
+
         /* --- 🌟 Category Filter Design --- */
         .category-wrapper {
             display: flex;
@@ -307,6 +317,10 @@
                 <div class="synopsis-title">Synopsis</div>
                 <p id="modalSynopsis" class="synopsis-text"></p>
                 <a id="modalLink" href="#" target="_blank" class="watch-btn">Watch on Telegram</a>
+                <button id="shareBtn" class="share-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                    Share Movie
+                </button>
             </div>
         </div>
     </div>
@@ -426,17 +440,46 @@
                 const response = await fetch('/api/movies');
                 let fetchedMovies = await response.json();
                 
-                // ပုံမှန် Random မွှေနှောက်ခြင်း
                 fetchedMovies.sort(() => Math.random() - 0.5);
                 
                 allMovies = fetchedMovies;
                 currentFilteredMovies = allMovies; 
                 
-                renderCategories(); // 🌟 ခလုတ်များကို အလိုအလျောက် ဖန်တီးမည်
+                renderCategories(); 
                 renderMoviesAndPagination(); 
+
+                // 🌟 Website ပွင့်လာစဉ် URL တွင် ?movie=id ပါလာခဲ့လျှင် ထိုကားကို အလိုအလျောက် ဖွင့်ပြမည်
+                const urlParams = new URLSearchParams(window.location.search);
+                const sharedMovieId = urlParams.get('movie');
+                if (sharedMovieId) {
+                    const sharedMovie = allMovies.find(m => m._id === sharedMovieId);
+                    if (sharedMovie) openModal(sharedMovie);
+                }
+
             } catch (error) {
                 console.error("Data ဆွဲယူရာတွင် အမှားဖြစ်နေပါသည်: ", error);
             }
+        }
+
+        // 🌟 Link ကို Copy ကူးပေးမည့် Function
+        function shareMovie(id) {
+            const shareUrl = window.location.origin + window.location.pathname + `?movie=${id}`;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                const btn = document.getElementById('shareBtn');
+                const originalHTML = btn.innerHTML;
+                
+                // Copy ကူးပြီးကြောင်း UI ပြောင်းလဲပြသခြင်း
+                btn.innerHTML = '✅ Link Copied!';
+                btn.style.borderColor = '#10b981'; // အစိမ်းရောင်
+                btn.style.color = '#10b981';
+                
+                // (၂) စက္ကန့်ကြာလျှင် မူလအတိုင်း ပြန်ထားမည်
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                }, 2000);
+            });
         }
 
         // 🌟 Category ခလုတ်များကို အလိုအလျောက် ဖန်တီးသည့်စနစ်
@@ -640,17 +683,22 @@
             document.getElementById('modalYear').innerText = movie.year;
             document.getElementById('modalSynopsis').innerText = movie.synopsis;
             
-            // အဟောင်းနေရာတွင် အစားထိုးရန် (Telegram အစား Ads Page သို့ လွှဲမည်)
             const linkBtn = document.getElementById('modalLink');
             if(movie.telegramLink) {
                 linkBtn.style.display = 'block'; 
                 linkBtn.onclick = (e) => {
-                    e.preventDefault(); // တိုက်ရိုက်သွားခြင်းကို တားမည်
-                    showAdPage(movie.telegramLink); // Ads Page သို့ ခေါ်မည်
+                    e.preventDefault(); 
+                    showAdPage(movie.telegramLink); 
                 };
             } else {
                 linkBtn.style.display = 'none';
             }
+
+            // 🌟 Share Button ကို နှိပ်လျှင် အလုပ်လုပ်မည့် Function ချိတ်ဆက်ခြင်း
+            document.getElementById('shareBtn').onclick = () => shareMovie(movie._id);
+
+            // 🌟 URL တွင် ?movie=id ထည့်ပေးခြင်း (Page မပွင့်ဘဲ URL သာပြောင်းမည်)
+            window.history.pushState({}, '', `?movie=${movie._id}`);
             
             const modal = document.getElementById('movieModal');
             modal.style.display = 'flex'; 
@@ -660,6 +708,9 @@
         function closeModal() {
             document.getElementById('movieModal').style.display = 'none';
             document.body.style.overflow = 'auto'; 
+            
+            // 🌟 Modal ပိတ်လိုက်လျှင် URL မှ ?movie=id ကို ပြန်ဖျက်မည်
+            window.history.pushState({}, '', window.location.pathname);
         }
 
         window.onclick = function(event) {
