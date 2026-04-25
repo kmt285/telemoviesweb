@@ -90,8 +90,9 @@
 
         /* 🌟 အလျားလိုက် (Landscape) ပုံများအတွက် သီးသန့်ဒီဇိုင်း */
         .movie-card.landscape-card img {
-            height: 160px; /* အမြင့်ကို လျှော့ချလိုက်မည် */
-            aspect-ratio: 16 / 9; /* 16:9 အလျားလိုက် အချိုးအတိုင်း ပြမည် */
+            width: 100%;
+            height: auto; /* 🌟 160px အစား auto သို့ ပြောင်းလိုက်ပါ */
+            aspect-ratio: 16 / 9; /* 🌟 16:9 အတိအကျ ဖြစ်သွားပါမည် (ပိုအလျားရှည်ချင်ပါက 21 / 9 ဟု ပြင်နိုင်သည်) */
             object-fit: cover;
             border-bottom: 1px solid var(--border-color);
         }
