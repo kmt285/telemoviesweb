@@ -87,6 +87,15 @@
             transition: transform 0.2s ease, border-color 0.2s ease;
             display: flex; flex-direction: column;
         }
+
+        /* 🌟 အလျားလိုက် (Landscape) ပုံများအတွက် သီးသန့်ဒီဇိုင်း */
+        .movie-card.landscape-card img {
+            height: 160px; /* အမြင့်ကို လျှော့ချလိုက်မည် */
+            aspect-ratio: 16 / 9; /* 16:9 အလျားလိုက် အချိုးအတိုင်း ပြမည် */
+            object-fit: cover;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
         .movie-card:hover { transform: translateY(-4px); border-color: #33394a; }
         .movie-card img { width: 100%; height: 280px; object-fit: cover; }
         
@@ -569,15 +578,25 @@
                 return;
             }
 
-            // လက်ရှိ Page အတွက် ပြရမည့် ရုပ်ရှင်များကို ခွဲထုတ်ခြင်း (Slice)
             const startIndex = (currentPage - 1) * moviesPerPage;
             const endIndex = startIndex + moviesPerPage;
             const paginatedMovies = currentFilteredMovies.slice(startIndex, endIndex);
 
-            // ရုပ်ရှင်များကို Grid ထဲ ထည့်ခြင်း နှင့် Views ပြခြင်း
             paginatedMovies.forEach(movie => {
                 const card = document.createElement('div');
-                card.className = 'movie-card';
+                
+                // 🌟 Category တွင် Porn ပါ/မပါ စစ်ဆေးခြင်း
+                let isLandscape = false;
+                if (movie.category) {
+                    const catArray = movie.category.split(',').map(c => c.trim().toLowerCase());
+                    if (catArray.includes('porn')) {
+                        isLandscape = true; // Porn ပါလျှင် Landscape ပုံစံပြောင်းမည်
+                    }
+                }
+
+                // Porn ဖြစ်လျှင် 'landscape-card' ဆိုသည့် Class ကိုပါ ပေါင်းထည့်မည်
+                card.className = isLandscape ? 'movie-card landscape-card' : 'movie-card';
+                
                 card.innerHTML = `
                     <img src="/api/image/${movie.posterFileId}" alt="${movie.title}" loading="lazy">
                     <div class="movie-info">
@@ -596,7 +615,6 @@
                 card.onclick = () => openModal(movie);
                 grid.appendChild(card);
 
-                // 🌟 Website ပွင့်လာသည်နှင့် နောက်ကွယ်မှ Views အရေအတွက်ကို လှမ်းတောင်းခြင်း
                 if (movie.telegramLink) {
                     fetch(`/api/views?link=${encodeURIComponent(movie.telegramLink)}`)
                         .then(res => res.json())
@@ -611,12 +629,10 @@
                         })
                         .catch(err => console.log("Views ဆွဲယူ၍ မရပါ။"));
                 } else {
-                    // Link မရှိလျှင် Views အကွက်ကို ဖျောက်ထားမည်
                     document.getElementById(`views-${movie._id}`).style.display = 'none';
                 }
             });
             
-            // Pagination ခလုတ်များကို တည်ဆောက်ခြင်း
             renderPagination();
         }
 
