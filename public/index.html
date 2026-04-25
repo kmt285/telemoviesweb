@@ -205,12 +205,34 @@
 
         @media (min-width: 768px) {
             .modal-content { flex-direction: row; overflow: hidden; }
-            .modal-left { width: 40%; }
+            .modal-left { 
+                width: 40%; 
+                background-color: #0b0d13; /* 🌟 ပုံအပြည့်ပေါ်သည့်အခါ ဘေးမှလွတ်နေမည့်နေရာအတွက် နောက်ခံအရောင် */
+                display: flex; 
+                align-items: center; 
+                justify-content: center;
+            }
             .modal-right { width: 60%; padding: 40px 30px; overflow-y: auto; max-height: 90vh; }
-            .modal-left img { height: 100%; width: 100%; object-fit: cover; }
+            .modal-left img { 
+                height: 100%; 
+                width: 100%; 
+                object-fit: contain; /* 🌟 cover မှ contain သို့ ပြောင်းလိုက်သည် (ပုံအပြည့်ပေါ်မည်) */
+                padding: 15px; /* ပုံနှင့် ဘောင်မကပ်နေစေရန် */
+            }
         }
         @media (max-width: 767px) {
-            .modal-left img { width: 100%; max-height: 350px; object-fit: cover; display: block; }
+            .modal-left {
+                background-color: #0b0d13;
+                display: flex;
+                justify-content: center;
+            }
+            .modal-left img { 
+                width: 100%; 
+                max-height: 350px; 
+                object-fit: contain; /* 🌟 cover မှ contain သို့ ပြောင်းလိုက်သည် (ပုံအပြည့်ပေါ်မည်) */
+                display: block; 
+                padding: 15px;
+            }
             .modal-right { padding: 25px 20px; }
         }
 
